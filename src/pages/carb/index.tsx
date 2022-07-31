@@ -167,4 +167,3 @@ function Carb() {
 }
 
 export default observer(Carb);
-console.log(foodList2ActionSheetActions());
