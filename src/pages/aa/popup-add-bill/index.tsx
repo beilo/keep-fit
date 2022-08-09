@@ -1,24 +1,25 @@
-import { Cell, CellGroup, Checkbox, Field } from "@antmjs/vantui";
+import { Cell, CellGroup, Checkbox, Field, Stepper } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import { useEffect, useState } from "react";
+import { Immutable, produce } from "immer";
+import { useEffect, useMemo, useState } from "react";
 
 import "./index.less";
 
 export function PopupAddBill() {
-  const [sumPrice, setSumPrice] = useState("");
-  const [averagePrice, setAveragePrice] = useState("");
   const [remarks, setRemarks] = useState("");
   const [currentPayUserId, setCurrentPayUserId] = useState("");
 
   const [users, setUsers] = useState<
-    {
-      name: string;
-      id: string;
-      isPay: boolean;
-      payPrice: number;
-      isTakePart: boolean;
-      takePartPrice: number;
-    }[]
+    Immutable<
+      {
+        name: string;
+        id: string;
+        isPay: boolean;
+        payPrice: number;
+        isTakePart: boolean;
+        step: number;
+      }[]
+    >
   >([]);
   useEffect(() => {
     const serData = [
@@ -28,7 +29,7 @@ export function PopupAddBill() {
         isPay: false,
         payPrice: 0,
         isTakePart: false,
-        takePartPrice: 0,
+        step: 1,
       },
       {
         name: "雷鹏2",
@@ -36,7 +37,7 @@ export function PopupAddBill() {
         isPay: false,
         payPrice: 0,
         isTakePart: false,
-        takePartPrice: 0,
+        step: 1,
       },
       {
         name: "雷鹏3",
@@ -44,7 +45,7 @@ export function PopupAddBill() {
         isPay: false,
         payPrice: 0,
         isTakePart: false,
-        takePartPrice: 0,
+        step: 1,
       },
     ];
     const _serData = serData.map((item, index) => {
@@ -58,43 +59,68 @@ export function PopupAddBill() {
     setCurrentPayUserId(_serData[0].id);
   }, []);
 
-  useEffect(() => {
+  const { sumPrice, averagePrice } = useMemo(() => {
     let sumPrice = 0;
-    let takePartCount = 0;
+    let takePartLength = 0;
     users.forEach((user) => {
       if (user.isPay) {
         sumPrice += user.payPrice;
       }
       if (user.isTakePart) {
-        takePartCount++;
+        takePartLength += user.step;
       }
     });
-    setSumPrice(String(sumPrice));
-    setAveragePrice(String(sumPrice / takePartCount));
+    return {
+      sumPrice: String(sumPrice),
+      averagePrice: sumPrice / takePartLength,
+    };
   }, [users]);
 
   // todo 时间
 
   const onDelete = () => {
-    setUsers((pre) => {
-      const idx = pre.findIndex((_) => _.id === currentPayUserId);
-      const price = String(pre[idx].payPrice || "");
-      pre[idx].payPrice = Number(price.slice(0, price.length - 1));
-      return [...pre];
-    });
+    setUsers(produce((draft) => calculate(draft, undefined)));
   };
   const onInput = (value_) => {
-    setUsers((pre) => {
-      const idx = pre.findIndex((_) => _.id === currentPayUserId);
-      const price = String(pre[idx].payPrice || "");
-      pre[idx].payPrice = Number(price + value_);
-      return [...pre];
-    });
+    setUsers(produce((draft) => calculate(draft, value_)));
+  };
+  const onCheckbox = (e, user, type: "isPay" | "isTakePart") => {
+    e.stopPropagation();
+    setUsers(
+      produce((draft) => {
+        const idx = draft.findIndex((_) => _.id === user.id);
+        if (type === "isPay") {
+          draft[idx].isPay = !user.isPay;
+          setCurrentPayUserId(user.id);
+        } else if (type === "isTakePart") {
+          draft[idx].isTakePart = !user.isTakePart;
+        }
+      })
+    );
+  };
+  const onStep = (user, step) => {
+    setUsers(
+      produce((draft) => {
+        const idx = draft.findIndex((_) => _.id === user.id);
+        draft[idx].step = step;
+      })
+    );
   };
 
+  const calculate = (draft, value_) => {
+    const idx = draft.findIndex((_) => _.id === currentPayUserId);
+    const user = draft[idx];
+    const price = String(user.payPrice || "");
+    const _payPrice = value_
+      ? Number(price + value_)
+      : Number(price.slice(0, price.length - 1));
+    user.payPrice = _payPrice;
+  };
+
+
   return (
-    <>
-      <View className="popup-add-bill--top_wrap">
+    <View className="popup-add-bill">
+      <View className="top_wrap">
         <CellGroup title="消费" inset>
           <Cell title="其他" border={false} value={sumPrice} />
         </CellGroup>
@@ -110,13 +136,7 @@ export function PopupAddBill() {
                   <Checkbox
                     value={user.isPay}
                     onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentPayUserId(user.id);
-                      setUsers((pre) => {
-                        const idx = pre.findIndex((_) => _.id === user.id);
-                        pre[idx].isPay = !user.isPay;
-                        return [...pre];
-                      });
+                      onCheckbox(e, user, "isPay");
                     }}
                   >
                     {user.name}
@@ -132,32 +152,37 @@ export function PopupAddBill() {
               <Cell
                 key={user.id}
                 border={false}
-                value={user.isTakePart ? averagePrice : 0}
+                value={user.isTakePart ? averagePrice * user.step : 0}
                 renderTitle={
-                  <Checkbox
-                    value={user.isTakePart}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentPayUserId(user.id);
-                      setUsers((pre) => {
-                        const idx = pre.findIndex((_) => _.id === user.id);
-                        pre[idx].isTakePart = !user.isTakePart;
-                        return [...pre];
-                      });
-                    }}
-                  >
-                    {user.name}
-                  </Checkbox>
+                  <View className="take-part_wrap">
+                    <Checkbox
+                      value={user.isTakePart}
+                      onClick={(e) => {
+                        onCheckbox(e, user, "isTakePart");
+                      }}
+                    >
+                      {user.name}
+                    </Checkbox>
+                    <Stepper
+                      className="take-part_wrap-step"
+                      value={user.step}
+                      integer
+                      min={1}
+                      onChange={(e) => {
+                        onStep(user, e.detail);
+                      }}
+                    />
+                  </View>
                 }
               />
             );
           })}
         </CellGroup>
       </View>
-      <View className="popup-add-bill--remark_input">
+      <View className="remark_input">
         <Field
           value={remarks}
-          className="popup-add-bill--remark_input"
+          className="remark_input"
           placeholder="备注"
           type="number"
           border={false}
@@ -165,13 +190,13 @@ export function PopupAddBill() {
             setRemarks(e.detail);
           }}
         />
-        <View className="popup-add-bill--number-key-board_wrap">
-          <View className="popup-add-bill--number-key-board_left">
+        <View className="number-key-board_wrap">
+          <View className="number-key-board_left">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ".", ""].map((item) => {
               return (
                 <View
                   key={item}
-                  className="popup-add-bill--number-key-board_item"
+                  className="number-key-board_item"
                   onClick={() => {
                     onInput(item);
                   }}
@@ -181,21 +206,21 @@ export function PopupAddBill() {
               );
             })}
           </View>
-          <View className="popup-add-bill--number-key-board_right">
+          <View className="number-key-board_right">
             <View
-              className="popup-add-bill--number-key-board_del"
+              className="number-key-board_del"
               onClick={() => {
                 onDelete();
               }}
             >
               x
             </View>
-            <View className="popup-add-bill--number-key-board_confirm">
+            <View className="number-key-board_confirm">
               确定
             </View>
           </View>
         </View>
       </View>
-    </>
+    </View>
   );
 }

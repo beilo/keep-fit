@@ -1,14 +1,16 @@
 import { Cell, CellGroup, Field, Popup } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import { observer } from "mobx-react";
+import { useState } from "react";
 
 import "./index.less";
 import { PopupAddBill } from "./popup-add-bill";
 
 function AA() {
+  const [visPopupAddBill, setVisPopupAddBill] = useState(false);
   return (
     <>
-      {/* <View>
+      <View className="aa">
         <CellGroup>
           <Cell
             title="其他"
@@ -23,12 +25,12 @@ function AA() {
           />
         </CellGroup>
       </View>
-      <View className="aa--btn-add">
-        <View className="aa--btn-add-line"></View>
-        <View className="aa--btn-add-row"></View>
-      </View> */}
+      <View className="btn-add" onClick={() => setVisPopupAddBill(true)}>
+        <View className="btn-add-line"></View>
+        <View className="btn-add-row"></View>
+      </View>
 
-      <PopupAddBill />
+      {visPopupAddBill && <PopupAddBill />}
     </>
   );
 }
