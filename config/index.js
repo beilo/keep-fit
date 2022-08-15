@@ -1,3 +1,5 @@
+const path = require('path');
+
 const config = {
   projectName: "keep-fit",
   date: "2022-7-25",
@@ -16,6 +18,9 @@ const config = {
     options: {},
   },
   framework: "react",
+  alias: {
+    'src': path.resolve(__dirname, '..', 'src'),
+  },
   mini: {
     postcss: {
       pxtransform: {

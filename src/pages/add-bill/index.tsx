@@ -1,11 +1,13 @@
 import { Cell, CellGroup, Checkbox, Field, Stepper } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
+import Taro from "@tarojs/taro";
 import { Immutable, produce } from "immer";
 import { useEffect, useMemo, useState } from "react";
+import { ROUTE_PATHS } from "src/router";
 
 import "./index.less";
 
-export function PopupAddBill() {
+export default function AddBill() {
   const [remarks, setRemarks] = useState("");
   const [currentPayUserId, setCurrentPayUserId] = useState("");
 
@@ -82,6 +84,12 @@ export function PopupAddBill() {
     setUsers(produce((draft) => calculate(draft, undefined)));
   };
   const onInput = (value_) => {
+    if (value_ === '关闭') {
+      Taro.navigateTo({
+        url: ROUTE_PATHS.aa
+      })
+      return;
+    }
     setUsers(produce((draft) => calculate(draft, value_)));
   };
   const onCheckbox = (e, user, type: "isPay" | "isTakePart") => {
@@ -192,7 +200,7 @@ export function PopupAddBill() {
         />
         <View className="number-key-board_wrap">
           <View className="number-key-board_left">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ".", ""].map((item) => {
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ".", "关闭"].map((item) => {
               return (
                 <View
                   key={item}
