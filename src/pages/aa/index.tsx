@@ -1,7 +1,6 @@
 import { ActionSheet, Cell, CellGroup } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { observer } from "mobx-react";
 import { useState } from "react";
 import { ROUTE_PATHS } from "src/router";
 
@@ -60,4 +59,4 @@ function AA() {
   );
 }
 
-export default observer(AA);
+export default AA;
