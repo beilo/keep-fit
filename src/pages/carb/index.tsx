@@ -10,7 +10,6 @@ import {
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
-import { observer, useLocalStore } from "mobx-react";
 import { foodList2ActionSheetActions, FOOD_LIST } from "./constant";
 
 function Carb() {
