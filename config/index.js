@@ -22,6 +22,9 @@ const config = {
     'src': path.resolve(__dirname, '..', 'src'),
   },
   mini: {
+    miniCssExtractPluginOption: {
+      ignoreOrder: true,
+    },
     postcss: {
       pxtransform: {
         enable: true,

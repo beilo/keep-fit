@@ -1,46 +1,102 @@
-import { Button, Cell, Dialog, Field, SwipeCell } from "@antmjs/vantui";
+import { Button, Cell, Dialog, Field, SwipeCell, Toast } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
 import { useEffect } from "react";
+import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
+import { navigateTo } from "src/utils/navigate";
 import "./index.less";
-import { setIsAdd, setLedgerName, useStore } from "./store";
+import { setIsAdd, setLedgerList, setLedgerName, useStore } from "./store";
 
 export default function LedgerList() {
   const snap = useStore();
-  useEffect(() => {}, []);
 
-  const confirm = () => {
-    console.log(snap.ledgerName);
+  const apiGetLedgerList = async () => {
+    try {
+      Toast.loading("查询中...");
+      const res = await getLedgerList({});
+      Toast.clear();
+      if (res.data.code === 0) {
+        setLedgerList(res.data.data);
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      Toast.fail(error.message);
+    }
+  };
+  useEffect(() => {
+    apiGetLedgerList();
+  }, []);
+
+  const apiAddLedger = async () => {
+    try {
+      Toast.loading("新增中...");
+      const res = await addLedger(snap.ledgerName);
+      Toast.clear();
+      if (res.data.code === 0) {
+        apiGetLedgerList();
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      Toast.fail(error.message);
+    }
     setIsAdd(false);
   };
+  const confirm = async () => {
+    apiAddLedger();
+  };
+
+  const apiDelLedger = async (ledgerId: number) => {
+    try {
+      Toast.loading("删除中...");
+      const res = await delLedger(ledgerId);
+      Toast.clear();
+      if (res.data.code === 0) {
+        apiGetLedgerList();
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      Toast.fail(error.message);
+    }
+  };
+  const del = async (ledgerId: number) => {
+    apiDelLedger(ledgerId);
+  };
+
   const jumpAA = (ledgerId: number) => {
-    console.log(ledgerId);
-    console.log(ROUTE_PATHS.aa);
-    
-    Taro.navigateTo({ url: `/${ROUTE_PATHS.aa }`});
+    navigateTo({ url: `${ROUTE_PATHS.aa}?ledgerId=${ledgerId}` });
   };
   return (
     <View className="ledger-list">
-      <SwipeCell
-        rightWidth={60}
-        renderRight={<View className="del-btn">删除</View>}
-      >
-        <Cell
-          className="mt-16"
-          isLink
-          title={"a账单"}
-          onClick={() => {
-            jumpAA(1);
-          }}
-        />
-      </SwipeCell>
-      <SwipeCell
-        rightWidth={60}
-        renderRight={<View className="del-btn">删除</View>}
-      >
-        <Cell className="mt-16" isLink title={"a账单"} />
-      </SwipeCell>
+      {snap.ledgerList?.map((item) => {
+        return (
+          <SwipeCell
+            rightWidth={60}
+            renderRight={
+              <View
+                className="del-btn"
+                onClick={() => {
+                  del(item.ledgerId);
+                }}
+              >
+                删除
+              </View>
+            }
+          >
+            <Cell
+              key={item.ledgerId}
+              className="mt-16"
+              isLink
+              title={item.name}
+              onClick={() => {
+                jumpAA(item.ledgerId);
+              }}
+            />
+          </SwipeCell>
+        );
+      })}
 
       <View className="bottom-wrap">
         <Button

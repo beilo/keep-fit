@@ -1,58 +1,128 @@
-import { ActionSheet, Cell, CellGroup } from "@antmjs/vantui";
+import { ActionSheet, Cell, CellGroup, SwipeCell, Toast } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { useState } from "react";
+import Taro, { useRouter } from "@tarojs/taro";
+import { useEffect } from "react";
+import { delBill, getBillList } from "src/apis/bill";
 import { ROUTE_PATHS } from "src/router";
 
-
 import "./index.less";
+import { action, useStore } from "./store";
 
 function AA() {
-  const [visAddBtnSheet, setVisAddBtnSheet] = useState(false);
+  const snap = useStore();
+  const router = useRouter<{ ledgerId: string }>();
+
+  const apiGetBillList = async () => {
+    try {
+      Toast.loading("查询中...");
+      const res = await getBillList({
+        ledgerId: Number(router.params.ledgerId),
+      });
+      Toast.clear();
+      console.log(res);
+
+      if (res.data.code === 0) {
+        action.setBillList(res.data.data);
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      Toast.fail(error.message);
+    }
+  };
+  useEffect(() => {
+    apiGetBillList();
+  }, [router.params.ledgerId]);
+
+  const apiDelLedger = async (billId: number) => {
+    try {
+      Toast.loading("删除中...");
+      const res = await delBill(billId);
+      Toast.clear();
+      if (res.data.code === 0) {
+        apiGetBillList();
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      Toast.fail(error.message);
+    }
+  };
+  const del = async (billId: number) => {
+    apiDelLedger(billId);
+  };
+
   return (
     <>
       <View className="aa">
         <CellGroup>
-          <Cell
-            title="其他"
-            label="07/23 22:36 饭+菜"
-            border={false}
-            renderExtra={
-              <>
-                <View className="price">18.5</View>
-                <View className="number-people">2人消费</View>
-              </>
-            }
-          />
+          {snap.billList.map((item) => {
+            return (
+              <SwipeCell
+                key={item.billId}
+                rightWidth={60}
+                renderRight={
+                  <View
+                    className="del-btn"
+                    onClick={() => {
+                      del(item.billId);
+                    }}
+                  >
+                    删除
+                  </View>
+                }
+              >
+                <Cell
+                  title={item.categoryName}
+                  label={`${item.billTime} ${item.remarks}`}
+                  border={true}
+                  renderExtra={
+                    <View>
+                      <View className="price">{item.billAmount}</View>
+                      <View className="number-people">
+                        {item.participants.length}人消费
+                      </View>
+                    </View>
+                  }
+                />
+              </SwipeCell>
+            );
+          })}
         </CellGroup>
       </View>
-      <View className="btn-add" onClick={() => {
-        setVisAddBtnSheet(true)
-      }}>
+      <View
+        className="btn-add"
+        onClick={() => {
+          action.setVisAddBtnSheet(true);
+        }}
+      >
         <View className="btn-add-line"></View>
         <View className="btn-add-row"></View>
       </View>
 
       <ActionSheet
-        show={visAddBtnSheet}
-        actions={[{
-          name: '记账',
-        }, {
-          name: '取消',
-        }]}
-        onClose={() => setVisAddBtnSheet(false)}
+        show={snap.visAddBtnSheet}
+        actions={[
+          {
+            name: "记账",
+          },
+          {
+            name: "取消",
+          },
+        ]}
+        onClose={() => action.setVisAddBtnSheet(false)}
         onSelect={(e) => {
-          setVisAddBtnSheet(false);
+          action.setVisAddBtnSheet(false);
           const detail = e.detail;
           Promise.resolve().then(() => {
-            if (detail.name === '记账') {
+            if (detail.name === "记账") {
               Taro.navigateTo({
-                url: ROUTE_PATHS["add-bill"]
-              })
-            } else if (detail.name === '取消') {
-              setVisAddBtnSheet(false)
+                url: ROUTE_PATHS["add-bill"],
+              });
+            } else if (detail.name === "取消") {
+              action.setVisAddBtnSheet(false);
             }
-          })
+          });
         }}
       />
     </>

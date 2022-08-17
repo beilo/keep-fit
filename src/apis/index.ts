@@ -1,7 +1,7 @@
 import axios from "axios";
 import { TaroAdapter } from "axios-taro-adapter";
 
-const API_URL = "https://api.xxxx.com/";
+const API_URL = "http://aa-ledger.sit.wskfz.com";
 export const Http = axios.create({
   baseURL: API_URL,
   timeout: 10000,
