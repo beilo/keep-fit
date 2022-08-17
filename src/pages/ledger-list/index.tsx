@@ -1,34 +1,39 @@
-import {
-  Cell,
-  CellGroup,
-  Checkbox,
-  Field,
-  Stepper,
-  Button,
-} from "@antmjs/vantui";
+import { Button, Cell, Dialog, Field, SwipeCell } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Immutable, produce } from "immer";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { ROUTE_PATHS } from "src/router";
-import { Row, Col } from "@antmjs/vantui";
 import "./index.less";
-import { SwipeCell } from "@antmjs/vantui";
-import { Dialog } from "@antmjs/vantui";
-import { proxy, useSnapshot } from "valtio";
-import { setIsAdd, useStore,setLedgerName,setLedgerList } from "./store";
+import { setIsAdd, setLedgerName, useStore } from "./store";
 
 export default function LedgerList() {
   const snap = useStore();
   useEffect(() => {}, []);
 
+  const confirm = () => {
+    console.log(snap.ledgerName);
+    setIsAdd(false);
+  };
+  const jumpAA = (ledgerId: number) => {
+    console.log(ledgerId);
+    console.log(ROUTE_PATHS.aa);
+    
+    Taro.navigateTo({ url: `/${ROUTE_PATHS.aa }`});
+  };
   return (
     <View className="ledger-list">
       <SwipeCell
         rightWidth={60}
         renderRight={<View className="del-btn">删除</View>}
       >
-        <Cell className="mt-16" isLink title={"a账单"} />
+        <Cell
+          className="mt-16"
+          isLink
+          title={"a账单"}
+          onClick={() => {
+            jumpAA(1);
+          }}
+        />
       </SwipeCell>
       <SwipeCell
         rightWidth={60}
@@ -57,10 +62,7 @@ export default function LedgerList() {
         onClose={() => {
           setIsAdd(false);
         }}
-        onConfirm={() => {
-          console.log(snap.ledgerName);
-
-        }}
+        onConfirm={confirm}
       >
         <Field
           placeholder="请输入账本名称"
