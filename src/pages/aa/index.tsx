@@ -3,6 +3,7 @@ import { View } from "@tarojs/components";
 import Taro, { useRouter } from "@tarojs/taro";
 import { useEffect } from "react";
 import { delBill, getBillList } from "src/apis/bill";
+import Sidebar from "src/components/sidebar";
 import { ROUTE_PATHS } from "src/router";
 
 import "./index.less";
@@ -10,13 +11,12 @@ import { action, useStore } from "./store";
 
 function AA() {
   const snap = useStore();
-  const router = useRouter<{ ledgerId: string }>();
 
   const apiGetBillList = async () => {
     try {
       Toast.loading("查询中...");
       const res = await getBillList({
-        ledgerId: Number(router.params.ledgerId),
+        ledgerId: Number(Taro.getStorageSync('ledgerId')),
       });
       Toast.clear();
       console.log(res);
@@ -32,7 +32,7 @@ function AA() {
   };
   useEffect(() => {
     apiGetBillList();
-  }, [router.params.ledgerId]);
+  }, []);
 
   const apiDelLedger = async (billId: number) => {
     try {
@@ -80,7 +80,7 @@ function AA() {
                     <View>
                       <View className="price">{item.billAmount}</View>
                       <View className="number-people">
-                        {item.participants.length}人消费
+                        {item.participants?.length || 0}人消费
                       </View>
                     </View>
                   }
@@ -90,7 +90,7 @@ function AA() {
           })}
         </CellGroup>
       </View>
-      <View
+      {/* <View
         className="btn-add"
         onClick={() => {
           action.setVisAddBtnSheet(true);
@@ -98,7 +98,9 @@ function AA() {
       >
         <View className="btn-add-line"></View>
         <View className="btn-add-row"></View>
-      </View>
+      </View> */}
+
+      <Sidebar />
 
       <ActionSheet
         show={snap.visAddBtnSheet}

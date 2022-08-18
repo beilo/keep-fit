@@ -1,5 +1,6 @@
 import { Button, Cell, Dialog, Field, SwipeCell, Toast } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
+import Taro from "@tarojs/taro";
 import { useEffect } from "react";
 import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
@@ -66,7 +67,8 @@ export default function LedgerList() {
   };
 
   const jumpAA = (ledgerId: number) => {
-    navigateTo({ url: `${ROUTE_PATHS.aa}?ledgerId=${ledgerId}` });
+    Taro.setStorageSync("ledgerId", ledgerId);
+    navigateTo({ url: ROUTE_PATHS.aa });
   };
   return (
     <View className="ledger-list">
