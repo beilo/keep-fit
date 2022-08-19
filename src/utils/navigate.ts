@@ -19,6 +19,11 @@ export const navigateTo = (opt: Option) => {
   Taro.navigateTo({ ...opt, url });
 };
 
+export const redirectTo = (opt: Option) => {
+  const url = "/" + opt.url;
+  Taro.redirectTo({ ...opt, url });
+};
+
 export const getPathParams = () => {
   return Taro.getCurrentInstance().router?.params;
 };

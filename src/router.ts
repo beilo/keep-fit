@@ -5,5 +5,7 @@ export const ROUTE_PATHS = {
     'invite-bill':'pages/invite-bill/index',
     'empty-bill':'pages/empty-bill/index',
     'ledger-list':'pages/ledger-list/index',
+    'home':'pages/home/index',
+
     carb: 'pages/carb/index',
 }
