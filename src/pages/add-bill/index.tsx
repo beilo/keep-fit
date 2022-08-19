@@ -2,14 +2,27 @@ import { Cell, CellGroup, Checkbox, Field, Stepper } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { Immutable, produce } from "immer";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ROUTE_PATHS } from "src/router";
 
 import "./index.less";
 
+import { proxy, useSnapshot } from "valtio";
+import { state } from "../carb/store";
+
 export default function AddBill() {
   const [remarks, setRemarks] = useState("");
   const [currentPayUserId, setCurrentPayUserId] = useState("");
+
+  const state = useRef(
+    proxy(
+      new (class State {
+        visPay = false;
+        visTakePart = false;
+      })()
+    )
+  ).current;
+  const snap = useSnapshot(state);
 
   const [users, setUsers] = useState<
     Immutable<
@@ -84,10 +97,10 @@ export default function AddBill() {
     setUsers(produce((draft) => calculate(draft, undefined)));
   };
   const onInput = (value_) => {
-    if (value_ === '关闭') {
+    if (value_ === "关闭") {
       Taro.navigateTo({
-        url: ROUTE_PATHS.aa
-      })
+        url: ROUTE_PATHS.aa,
+      });
       return;
     }
     setUsers(produce((draft) => calculate(draft, value_)));
@@ -125,15 +138,21 @@ export default function AddBill() {
     user.payPrice = _payPrice;
   };
 
-
   return (
     <View className="popup-add-bill">
       <View className="top_wrap">
         <CellGroup title="消费" inset>
           <Cell title="其他" border={false} value={sumPrice} />
         </CellGroup>
-        <CellGroup title="付款人" inset>
-          {users.map((user) => {
+        <CellGroup
+          title={`付款人${snap.visTakePart ? "↗" : "↘"}`}
+          inset
+          onClick={() => {
+            state.visTakePart = !state.visTakePart;
+          }}
+        >
+          {users.map((user, idx) => {
+            if (!snap.visTakePart && idx !== 0) return null;
             return (
               <Cell
                 key={user.id}
@@ -154,8 +173,15 @@ export default function AddBill() {
             );
           })}
         </CellGroup>
-        <CellGroup title="参与人" inset>
-          {users.map((user) => {
+        <CellGroup
+          title={`参与人${snap.visPay ? "↗" : "↘"}`}
+          inset
+          onClick={() => {
+            state.visPay = !state.visPay;
+          }}
+        >
+          {users.map((user, idx) => {
+            if (!snap.visPay && idx !== 0) return null;
             return (
               <Cell
                 key={user.id}
@@ -223,9 +249,7 @@ export default function AddBill() {
             >
               x
             </View>
-            <View className="number-key-board_confirm">
-              确定
-            </View>
+            <View className="number-key-board_confirm">确定</View>
           </View>
         </View>
       </View>
