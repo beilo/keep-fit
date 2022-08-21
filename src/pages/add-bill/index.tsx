@@ -31,7 +31,7 @@ export default function AddBill() {
     proxy(
       new (class State {
         visPay = false;
-        visTakePart = false;
+        visTakePart = true;
         users: IStateUser[] = [];
         currentUser = 0;
         remarks = "";
