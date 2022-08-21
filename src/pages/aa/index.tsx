@@ -1,13 +1,16 @@
-import { ActionSheet, Cell, CellGroup, SwipeCell, Toast } from "@antmjs/vantui";
+import { Cell, CellGroup, SwipeCell, Toast } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro, { useRouter } from "@tarojs/taro";
+import Taro from "@tarojs/taro";
 import { useEffect } from "react";
 import { delBill, getBillList } from "src/apis/bill";
 import Sidebar from "src/components/sidebar";
 import { ROUTE_PATHS } from "src/router";
 
+import { Icon } from "@antmjs/vantui";
 import "./index.less";
 import { action, useStore } from "./store";
+import { navigateTo } from "src/utils/navigate";
+
 
 function AA() {
   const snap = useStore();
@@ -16,11 +19,9 @@ function AA() {
     try {
       Toast.loading("查询中...");
       const res = await getBillList({
-        ledgerId: Number(Taro.getStorageSync('ledgerId')),
+        ledgerId: Number(Taro.getStorageSync("ledgerId")),
       });
       Toast.clear();
-      console.log(res);
-
       if (res.data.code === 0) {
         action.setBillList(res.data.data);
         return;
@@ -36,9 +37,7 @@ function AA() {
 
   const apiDelLedger = async (billId: number) => {
     try {
-      Toast.loading("删除中...");
       const res = await delBill(billId);
-      Toast.clear();
       if (res.data.code === 0) {
         apiGetBillList();
         return;
@@ -90,43 +89,21 @@ function AA() {
           })}
         </CellGroup>
       </View>
-      {/* <View
-        className="btn-add"
-        onClick={() => {
-          action.setVisAddBtnSheet(true);
-        }}
-      >
-        <View className="btn-add-line"></View>
-        <View className="btn-add-row"></View>
-      </View> */}
+      <View className="btn-add">
+        <Icon
+          name="fire"
+          size="32px"
+          color="#000"
+          onClick={() => {
+            navigateTo({
+              url: ROUTE_PATHS["add-bill"],
+            });
+          }}
+        ></Icon>
+      </View>
 
       <Sidebar />
-
-      <ActionSheet
-        show={snap.visAddBtnSheet}
-        actions={[
-          {
-            name: "记账",
-          },
-          {
-            name: "取消",
-          },
-        ]}
-        onClose={() => action.setVisAddBtnSheet(false)}
-        onSelect={(e) => {
-          action.setVisAddBtnSheet(false);
-          const detail = e.detail;
-          Promise.resolve().then(() => {
-            if (detail.name === "记账") {
-              Taro.navigateTo({
-                url: ROUTE_PATHS["add-bill"],
-              });
-            } else if (detail.name === "取消") {
-              action.setVisAddBtnSheet(false);
-            }
-          });
-        }}
-      />
+      <Toast id="toast" />
     </>
   );
 }

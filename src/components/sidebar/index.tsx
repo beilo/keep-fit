@@ -4,6 +4,7 @@ import { ROUTE_PATHS } from "src/router";
 import { proxy, useSnapshot } from "valtio";
 
 import { navigateTo } from "src/utils/navigate";
+
 import "./index.less";
 
 const state = proxy(
@@ -34,7 +35,7 @@ export default function Sidebar() {
   return (
     <>
       <View className="sidebar-fixed-btn" onClick={setShow}>
-        打开
+        <Icon name="more" size="32px" color="#000"></Icon>
       </View>
       {snap.show ? (
         <>

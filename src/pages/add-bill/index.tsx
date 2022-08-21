@@ -1,83 +1,76 @@
-import { Cell, CellGroup, Checkbox, Field, Stepper } from "@antmjs/vantui";
+import {
+  Cell,
+  CellGroup,
+  Checkbox,
+  Field,
+  Notify,
+  Stepper,
+  Toast,
+} from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
-import { Immutable, produce } from "immer";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { ROUTE_PATHS } from "src/router";
 
 import "./index.less";
 
+import { addBill } from "src/apis/bill";
+import { STORAGE_KEYS } from "src/utils/storage";
 import { proxy, useSnapshot } from "valtio";
-import { state } from "../carb/store";
+import { toast } from "src/utils/toast";
+
+type IStateUser = IUser & {
+  isPay: boolean;
+  payPrice: number;
+  isTakePart: boolean;
+  step: number;
+};
 
 export default function AddBill() {
-  const [remarks, setRemarks] = useState("");
-  const [currentPayUserId, setCurrentPayUserId] = useState("");
-
   const state = useRef(
     proxy(
       new (class State {
         visPay = false;
         visTakePart = false;
+        users: IStateUser[] = [];
+        currentUser = 0;
+        remarks = "";
       })()
     )
   ).current;
   const snap = useSnapshot(state);
 
-  const [users, setUsers] = useState<
-    Immutable<
-      {
-        name: string;
-        id: string;
-        isPay: boolean;
-        payPrice: number;
-        isTakePart: boolean;
-        step: number;
-      }[]
-    >
-  >([]);
   useEffect(() => {
-    const serData = [
+    const initUsers = [
       {
-        name: "雷鹏1",
-        id: "1",
-        isPay: false,
-        payPrice: 0,
-        isTakePart: false,
-        step: 1,
+        userId: 1,
+        userName: "用户1",
       },
       {
-        name: "雷鹏2",
-        id: "2",
-        isPay: false,
-        payPrice: 0,
-        isTakePart: false,
-        step: 1,
+        userId: 2,
+        userName: "用户2",
       },
       {
-        name: "雷鹏3",
-        id: "3",
-        isPay: false,
-        payPrice: 0,
-        isTakePart: false,
-        step: 1,
+        userId: 3,
+        userName: "用户3",
       },
     ];
-    const _serData = serData.map((item, index) => {
-      if (index === 0) {
-        item.isPay = true;
-      }
-      item.isTakePart = true;
-      return item;
-    });
-    setUsers(_serData);
-    setCurrentPayUserId(_serData[0].id);
+
+    state.currentUser = 1;
+    const temp = initUsers.map((user) => ({
+      ...user,
+      isPay: state.currentUser === user.userId,
+      payPrice: 0,
+      isTakePart: true,
+      step: 1,
+    }));
+    state.users = temp;
   }, []);
 
   const { sumPrice, averagePrice } = useMemo(() => {
     let sumPrice = 0;
     let takePartLength = 0;
-    users.forEach((user) => {
+    snap.users.forEach((user) => {
       if (user.isPay) {
         sumPrice += user.payPrice;
       }
@@ -89,12 +82,60 @@ export default function AddBill() {
       sumPrice: String(sumPrice),
       averagePrice: sumPrice / takePartLength,
     };
-  }, [users]);
+  }, [snap.users]);
 
   // todo 时间
 
+  const onSubmit = () => {
+    const payers: any[] = [],
+      participants: any[] = [];
+    state.users.forEach((user) => {
+      payers.push({
+        userId: user.userId,
+        userName: user.userName,
+        amount: user.payPrice,
+      });
+      participants.push({
+        userId: user.userId,
+        userName: user.userName,
+        amount: averagePrice * user.step,
+      });
+    });
+    console.log("payers", payers);
+    console.log("participants", participants);
+    console.log("remark", state.remarks);
+
+    const param = {
+      ledgerId: Taro.getStorageSync(STORAGE_KEYS.ledgerId),
+      categoryId: 1,
+      billAmount: Number(sumPrice),
+      billTime: new Date().getTime().toString(),
+      remarks: state.remarks,
+      payers,
+      participants,
+    };
+    apiAddBill(param);
+  };
+  const apiAddBill = async (data: IAddBillParams) => {
+    toast.error('tiandafsdf');
+
+    try {
+      Toast.loading("新增中...");
+      const res = await addBill(data);
+      Toast.clear();
+      if (res.data.code === 0) {
+        toast.success('添加成功')
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      toast.error(error.message);
+      error
+    }
+  };
+
   const onDelete = () => {
-    setUsers(produce((draft) => calculate(draft, undefined)));
+    calculate(state.users, undefined);
   };
   const onInput = (value_) => {
     if (value_ === "关闭") {
@@ -103,33 +144,27 @@ export default function AddBill() {
       });
       return;
     }
-    setUsers(produce((draft) => calculate(draft, value_)));
+    calculate(state.users, value_);
   };
   const onCheckbox = (e, user, type: "isPay" | "isTakePart") => {
     e.stopPropagation();
-    setUsers(
-      produce((draft) => {
-        const idx = draft.findIndex((_) => _.id === user.id);
-        if (type === "isPay") {
-          draft[idx].isPay = !user.isPay;
-          setCurrentPayUserId(user.id);
-        } else if (type === "isTakePart") {
-          draft[idx].isTakePart = !user.isTakePart;
-        }
-      })
-    );
+    const draft = state.users;
+    const idx = draft.findIndex((_) => _.userId === user.userId);
+    if (type === "isPay") {
+      draft[idx].isPay = !user.isPay;
+      state.currentUser = user.userId;
+    } else if (type === "isTakePart") {
+      draft[idx].isTakePart = !user.isTakePart;
+    }
   };
   const onStep = (user, step) => {
-    setUsers(
-      produce((draft) => {
-        const idx = draft.findIndex((_) => _.id === user.id);
-        draft[idx].step = step;
-      })
-    );
+    const draft = state.users;
+    const idx = draft.findIndex((_) => _.userId === user.userId);
+    draft[idx].step = step;
   };
 
   const calculate = (draft, value_) => {
-    const idx = draft.findIndex((_) => _.id === currentPayUserId);
+    const idx = draft.findIndex((_) => _.userId === state.currentUser);
     const user = draft[idx];
     const price = String(user.payPrice || "");
     const _payPrice = value_
@@ -144,21 +179,23 @@ export default function AddBill() {
         <CellGroup title="消费" inset>
           <Cell title="其他" border={false} value={sumPrice} />
         </CellGroup>
-        <CellGroup
-          title={`付款人${snap.visTakePart ? "↗" : "↘"}`}
-          inset
+        <View
+          className="van-cell-group__title van-cell-group__title--inset"
           onClick={() => {
-            state.visTakePart = !state.visTakePart;
+            state.visPay = !state.visPay;
           }}
         >
-          {users.map((user, idx) => {
-            if (!snap.visTakePart && idx !== 0) return null;
+          {`付款人${snap.visPay ? "↗" : "↘"}`}
+        </View>
+        <CellGroup inset>
+          {snap.users.map((user, idx) => {
+            if (!snap.visPay && idx !== 0) return null;
             return (
               <Cell
-                key={user.id}
+                key={user.userId}
                 border={false}
                 value={user.payPrice}
-                onClick={() => setCurrentPayUserId(user.id)}
+                onClick={() => (state.currentUser = user.userId)}
                 renderTitle={
                   <Checkbox
                     value={user.isPay}
@@ -166,25 +203,27 @@ export default function AddBill() {
                       onCheckbox(e, user, "isPay");
                     }}
                   >
-                    {user.name}
+                    {user.userName}
                   </Checkbox>
                 }
               />
             );
           })}
         </CellGroup>
-        <CellGroup
-          title={`参与人${snap.visPay ? "↗" : "↘"}`}
-          inset
+        <View
+          className="van-cell-group__title van-cell-group__title--inset"
           onClick={() => {
-            state.visPay = !state.visPay;
+            state.visTakePart = !state.visTakePart;
           }}
         >
-          {users.map((user, idx) => {
-            if (!snap.visPay && idx !== 0) return null;
+          {`参与人${snap.visTakePart ? "↗" : "↘"}`}
+        </View>
+        <CellGroup inset>
+          {snap.users.map((user, idx) => {
+            if (!snap.visTakePart && idx !== 0) return null;
             return (
               <Cell
-                key={user.id}
+                key={user.userId}
                 border={false}
                 value={user.isTakePart ? averagePrice * user.step : 0}
                 renderTitle={
@@ -195,7 +234,7 @@ export default function AddBill() {
                         onCheckbox(e, user, "isTakePart");
                       }}
                     >
-                      {user.name}
+                      {user.userName}
                     </Checkbox>
                     <Stepper
                       className="take-part_wrap-step"
@@ -215,13 +254,13 @@ export default function AddBill() {
       </View>
       <View className="remark_input">
         <Field
-          value={remarks}
+          value={snap.remarks}
           className="remark_input"
           placeholder="备注"
           type="number"
           border={false}
           onChange={(e) => {
-            setRemarks(e.detail);
+            state.remarks = e.detail;
           }}
         />
         <View className="number-key-board_wrap">
@@ -249,10 +288,14 @@ export default function AddBill() {
             >
               x
             </View>
-            <View className="number-key-board_confirm">确定</View>
+            <View className="number-key-board_confirm" onClick={onSubmit}>
+              确定
+            </View>
           </View>
         </View>
       </View>
+      <Toast />
+      <Notify />
     </View>
   );
 }

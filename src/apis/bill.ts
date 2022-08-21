@@ -21,3 +21,12 @@ export const delBill = async (billId: number) => {
     }
   );
 };
+
+export const addBill = (data: IAddBillParams) => {
+  return Http.post<IApiModal<IBill[]>>("/bill/create", data, {
+    headers: {
+      "User-Agent": "apifox/1.0.0 (https://www.apifox.cn)",
+      "Content-Type": "application/json",
+    },
+  });
+};
