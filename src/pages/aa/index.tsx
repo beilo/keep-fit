@@ -1,45 +1,39 @@
-import { Cell, CellGroup, SwipeCell, Toast } from "@antmjs/vantui";
+import {
+  Cell,
+  CellGroup,
+  PowerScrollView,
+  SwipeCell,
+  Toast,
+} from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { useEffect } from "react";
+import Taro, { useDidShow } from "@tarojs/taro";
+import { useEffect, useRef } from "react";
 import { delBill, getBillList } from "src/apis/bill";
 import Sidebar from "src/components/sidebar";
 import { ROUTE_PATHS } from "src/router";
 
 import { Icon } from "@antmjs/vantui";
 import "./index.less";
-import { action, useStore } from "./store";
 import { navigateTo } from "src/utils/navigate";
-
+import { toast } from "src/utils/toast";
+import { proxy, useSnapshot } from "valtio";
 
 function AA() {
-  const snap = useStore();
-
-  const apiGetBillList = async () => {
-    try {
-      Toast.loading("查询中...");
-      const res = await getBillList({
-        ledgerId: Number(Taro.getStorageSync("ledgerId")),
-      });
-      Toast.clear();
-      if (res.data.code === 0) {
-        action.setBillList(res.data.data);
-        return;
-      }
-      throw new Error(res.data.message);
-    } catch (error) {
-      Toast.fail(error.message);
-    }
-  };
-  useEffect(() => {
-    apiGetBillList();
-  }, []);
+  const state = useRef(
+    proxy(
+      new (class State {
+        billList: IBill[] = [];
+        basicsFinished = false;
+      })()
+    )
+  ).current;
+  const snap = useSnapshot(state);
 
   const apiDelLedger = async (billId: number) => {
     try {
       const res = await delBill(billId);
       if (res.data.code === 0) {
-        apiGetBillList();
+        basicsDoRefresh();
         return;
       }
       throw new Error(res.data.message);
@@ -51,10 +45,55 @@ function AA() {
     apiDelLedger(billId);
   };
 
+  let pageIndex = useRef(0).current;
+  const apiRefresh = async (isRefresh = false) => {
+    pageIndex = isRefresh ? 0 : ++pageIndex;
+    try {
+      const res = await getBillList({
+        ledgerId: Number(Taro.getStorageSync("ledgerId")),
+        billState: 0,
+        pageIndex,
+      });
+      if (res.data.code === 0) {
+        const data = res.data.data || [];
+
+        if (pageIndex === 0) {
+          state.billList = data;
+        } else {
+          state.billList.push(...data);
+        }
+        state.basicsFinished = data.length < 10;
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      !isRefresh && --pageIndex;
+      toast.error(error.message);
+    }
+  };
+  const basicsDoRefresh = async () => {
+    await apiRefresh(true);
+  };
+  const basicsLoadMore = async () => {
+    await apiRefresh();
+  };
+  useEffect(() => {
+    basicsDoRefresh();
+  }, []);
+
   return (
     <>
       <View className="aa">
-        <CellGroup>
+        <PowerScrollView
+          className="scorll-wrap"
+          finishedText="没有更多了"
+          successText="刷新成功"
+          onScrollToUpper={basicsDoRefresh}
+          onScrollToLower={basicsLoadMore}
+          current={snap.billList.length || 0}
+          pageSize={10}
+          finished={snap.basicsFinished}
+        >
           {snap.billList.map((item) => {
             return (
               <SwipeCell
@@ -87,8 +126,9 @@ function AA() {
               </SwipeCell>
             );
           })}
-        </CellGroup>
+        </PowerScrollView>
       </View>
+
       <View className="btn-add">
         <Icon
           name="fire"
@@ -103,7 +143,7 @@ function AA() {
       </View>
 
       <Sidebar />
-      <Toast id="toast" />
+      <Toast />
     </>
   );
 }

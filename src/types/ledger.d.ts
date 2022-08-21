@@ -6,7 +6,7 @@ interface IApiModal<T> {
   /**
    * 主体数据
    */
-  data?: T[];
+  data?: T;
   /**
    * 接口提示
    */

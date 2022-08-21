@@ -257,7 +257,6 @@ export default function AddBill() {
           value={snap.remarks}
           className="remark_input"
           placeholder="备注"
-          type="number"
           border={false}
           onChange={(e) => {
             state.remarks = e.detail;
