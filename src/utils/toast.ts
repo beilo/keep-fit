@@ -1,14 +1,8 @@
 import {
-  Cell,
-  CellGroup,
-  Checkbox,
-  Field,
-  Notify,
-  Stepper,
-  Toast,
+  Notify, Toast
 } from "@antmjs/vantui";
 
-export const loading = (msg: string) => {
+export const loading = (msg: string = '...') => {
   Toast.loading(msg);
 };
 export const hideLoading = () => {

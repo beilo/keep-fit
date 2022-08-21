@@ -1,7 +1,7 @@
 /**
  * 账本成员
  */
- interface IUser {
+interface IUser {
   /**
    * 用户ID
    */
@@ -10,13 +10,20 @@
    * 用户名
    */
   userName: string;
+  /**
+   * 邮箱
+   */
+  email: null | string;
+  /**
+   * 电话
+   */
+  phone: null | string;
 }
-
 
 /**
  * 账单参与者模型
  */
- interface IBillUser {
+interface IBillUser {
   /**
    * 金额
    */

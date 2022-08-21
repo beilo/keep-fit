@@ -6,6 +6,7 @@ export const ROUTE_PATHS = {
     'empty-bill':'pages/empty-bill/index',
     'ledger-list':'pages/ledger-list/index',
     'home':'pages/home/index',
+    'my-info':'pages/my-info/index',
 
     carb: 'pages/carb/index',
 }
