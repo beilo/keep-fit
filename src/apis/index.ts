@@ -20,7 +20,7 @@ Http.interceptors.response.use(
     if (typeof response.data.code !== 'number') {
       return Promise.reject(new Error("code异常，服务器异常"));
     }
-    return response.data;
+    return response;
   },
   function (error) {
     return Promise.reject(error);

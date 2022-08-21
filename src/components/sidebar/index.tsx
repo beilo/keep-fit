@@ -26,6 +26,12 @@ const SideBarList = [
       navigateTo({ url: ROUTE_PATHS.carb });
     },
   },
+  {
+    name: "我的页面",
+    jump() {
+      navigateTo({ url: ROUTE_PATHS["my-info"] });
+    },
+  },
 ];
 
 export default function Sidebar() {
