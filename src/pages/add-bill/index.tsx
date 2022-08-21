@@ -18,6 +18,7 @@ import { addBill } from "src/apis/bill";
 import { STORAGE_KEYS } from "src/utils/storage";
 import { proxy, useSnapshot } from "valtio";
 import { toast } from "src/utils/toast";
+import { navigateTo, redirectTo } from "src/utils/navigate";
 
 type IStateUser = IUser & {
   isPay: boolean;
@@ -72,7 +73,7 @@ export default function AddBill() {
     let takePartLength = 0;
     snap.users.forEach((user) => {
       if (user.isPay) {
-        sumPrice += user.payPrice;
+        sumPrice += Number(user.payPrice);
       }
       if (user.isTakePart) {
         takePartLength += user.step;
@@ -139,7 +140,7 @@ export default function AddBill() {
   };
   const onInput = (value_) => {
     if (value_ === "关闭") {
-      Taro.navigateTo({
+      redirectTo({
         url: ROUTE_PATHS.aa,
       });
       return;
@@ -167,9 +168,9 @@ export default function AddBill() {
     const idx = draft.findIndex((_) => _.userId === state.currentUser);
     const user = draft[idx];
     const price = String(user.payPrice || "");
-    const _payPrice = value_
-      ? Number(price + value_)
-      : Number(price.slice(0, price.length - 1));
+    const _payPrice = value_ !== undefined
+      ? price + value_
+      : price.slice(0, price.length - 1);
     user.payPrice = _payPrice;
   };
 

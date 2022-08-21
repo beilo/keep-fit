@@ -2,7 +2,6 @@ import { ROUTE_PATHS } from "./router";
 
 export default defineAppConfig({
   pages: [
-    
     ROUTE_PATHS.home,
     ROUTE_PATHS.aa,
     ROUTE_PATHS["ledger-list"],
@@ -18,4 +17,5 @@ export default defineAppConfig({
     navigationBarTitleText: "WeChat",
     navigationBarTextStyle: "black",
   },
+  lazyCodeLoading: "requiredComponents",
 });
