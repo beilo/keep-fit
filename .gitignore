@@ -12,4 +12,5 @@ website/package.json
 packages/**/package-lock.json
 coverage
 .history/
-.vscode/
+.vscode
+.vscode/settings.json
