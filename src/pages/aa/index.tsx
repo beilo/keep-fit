@@ -1,22 +1,23 @@
 import {
   Cell,
   CellGroup,
+  Notify,
   PowerScrollView,
   SwipeCell,
   Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro, { useDidShow } from "@tarojs/taro";
+import Taro from "@tarojs/taro";
 import { useEffect, useRef } from "react";
 import { delBill, getBillList } from "src/apis/bill";
 import Sidebar from "src/components/sidebar";
 import { ROUTE_PATHS } from "src/router";
 
 import { Icon } from "@antmjs/vantui";
-import "./index.less";
-import { navigateTo } from "src/utils/navigate";
+import { navigateTo, redirectTo } from "src/utils/navigate";
 import { toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
+import "./index.less";
 
 function AA() {
   const state = useRef(
@@ -24,6 +25,7 @@ function AA() {
       new (class State {
         billList: IBill[] = [];
         basicsFinished = false;
+        visSidebar = false;
       })()
     )
   ).current;
@@ -84,6 +86,21 @@ function AA() {
   return (
     <>
       <View className="aa">
+        <CellGroup className="header-wrap">
+          <Cell
+            title={"xxx账本"}
+            isLink
+            onClick={() => {
+              redirectTo({ url: ROUTE_PATHS["ledger-list"] });
+            }}
+          />
+          <Cell title={"账本成员"} label={"共xx人, 全员消费xx元"} isLink />
+          <Cell
+            title={"其他操作"}
+            isLink
+            onClick={() => (state.visSidebar = true)}
+          />
+        </CellGroup>
         <PowerScrollView
           className="scorll-wrap"
           finishedText="没有更多了"
@@ -129,20 +146,22 @@ function AA() {
         </PowerScrollView>
       </View>
 
-      <View className="btn-add">
-        <Icon
-          name="fire"
-          size="32px"
-          color="#000"
-          onClick={() => {
-            navigateTo({
-              url: ROUTE_PATHS["add-bill"],
-            });
-          }}
-        ></Icon>
+      <View
+        className="btn-add"
+        onClick={() => {
+          navigateTo({
+            url: ROUTE_PATHS["add-bill"],
+          });
+        }}
+      >
+        记账
       </View>
+      <Sidebar
+        show={snap.visSidebar}
+        onClose={() => (state.visSidebar = false)}
+      />
 
-      <Sidebar />
+      <Notify />
       <Toast />
     </>
   );

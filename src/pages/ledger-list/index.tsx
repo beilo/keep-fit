@@ -4,7 +4,7 @@ import Taro from "@tarojs/taro";
 import { useEffect } from "react";
 import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
-import { navigateTo } from "src/utils/navigate";
+import { navigateTo, redirectTo } from "src/utils/navigate";
 import "./index.less";
 import { setIsAdd, setLedgerList, setLedgerName, useStore } from "./store";
 
@@ -68,7 +68,7 @@ export default function LedgerList() {
 
   const jumpAA = (ledgerId: number) => {
     Taro.setStorageSync("ledgerId", ledgerId);
-    navigateTo({ url: ROUTE_PATHS.aa });
+    redirectTo({ url: ROUTE_PATHS.aa });
   };
   return (
     <View className="ledger-list">

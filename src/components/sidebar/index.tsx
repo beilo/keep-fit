@@ -1,17 +1,10 @@
 import { Icon } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import { ROUTE_PATHS } from "src/router";
-import { proxy, useSnapshot } from "valtio";
 
 import { navigateTo } from "src/utils/navigate";
 
 import "./index.less";
-
-const state = proxy(
-  new (class State {
-    show = false;
-  })()
-);
 
 const SideBarList = [
   {
@@ -34,38 +27,31 @@ const SideBarList = [
   },
 ];
 
-export default function Sidebar() {
-  const snap = useSnapshot(state);
-
-  const setShow = () => (state.show = !state.show);
+interface IProps {
+  show: boolean;
+  onClose: () => void;
+}
+export default function Sidebar({ show, onClose }: IProps) {
   return (
-    <>
-      <View className="sidebar-fixed-btn" onClick={setShow}>
-        <Icon name="more" size="32px" color="#000"></Icon>
+    <View style={{ display: !show ? "none" : "" }}>
+      <View className="mask" onClick={onClose}></View>
+      <View className="sidebar-wrap">
+        {SideBarList.map((item) => {
+          return (
+            <View
+              className="sidebar-item"
+              key={item.name}
+              onClick={() => {
+                item.jump();
+                onClose();
+              }}
+            >
+              {item.name}
+              <Icon name="arrow" />
+            </View>
+          );
+        })}
       </View>
-      {snap.show ? (
-        <>
-          <View className="mask" onClick={setShow}></View>
-          <View className="sidebar-wrap">
-            <View className="sidebar-header">header 头</View>
-            {SideBarList.map((item) => {
-              return (
-                <View
-                  className="sidebar-item"
-                  key={item.name}
-                  onClick={() => {
-                    item.jump();
-                    setShow();
-                  }}
-                >
-                  {item.name}
-                  <Icon name="arrow" />
-                </View>
-              );
-            })}
-          </View>
-        </>
-      ) : null}
-    </>
+    </View>
   );
 }

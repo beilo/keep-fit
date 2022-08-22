@@ -22,24 +22,26 @@ export default function Home() {
     } else {
       Taro.login({
         async success({ code, errMsg }) {
-          if (code) {
-            //发起网络请求
-            try {
-              Toast.loading("登录中...");
-              const res = await apiWxLogin(code);
-              Toast.clear();
-              if (res.data.data) {
-                console.log("apiWxLogin", res.data.data);
-                jump();
-                return;
-              }
-              throw new Error(res.data.message);
-            } catch (error) {
-              Toast.fail(error.message);
-            }
-          } else {
-            Toast.fail(errMsg);
-          }
+          console.log(code);
+          
+          // if (code) {
+          //   //发起网络请求
+          //   try {
+          //     Toast.loading("登录中...");
+          //     const res = await apiWxLogin(code);
+          //     Toast.clear();
+          //     if (res.data.data) {
+          //       console.log("apiWxLogin", res.data.data);
+          //       jump();
+          //       return;
+          //     }
+          //     throw new Error(res.data.message);
+          //   } catch (error) {
+          //     Toast.fail(error.message);
+          //   }
+          // } else {
+          //   Toast.fail(errMsg);
+          // }
         },
       });
     }
