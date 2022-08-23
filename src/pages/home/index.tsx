@@ -1,51 +1,53 @@
-import { Toast } from "@antmjs/vantui";
+import { Button, Notify, Toast } from "@antmjs/vantui";
 import Taro from "@tarojs/taro";
 import { useEffect } from "react";
 import { apiWxLogin } from "src/apis/user";
 import { ROUTE_PATHS } from "src/router";
+import { userStore } from "src/stores";
+import { ledgerStore } from "src/stores/ledger";
+import { actionsUserStore } from "src/stores/user";
 import { redirectTo } from "src/utils/navigate";
-import { STORAGE_KEYS } from "src/utils/storage";
+import { hideLoading, loading, toast } from "src/utils/toast";
+import { useSnapshot } from "valtio";
 
 export default function Home() {
+  const snap = useSnapshot(userStore);
   const jump = () => {
-    if (Taro.getStorageSync(STORAGE_KEYS.ledgerId)) {
+    if (ledgerStore.currentLedger) {
       redirectTo({ url: ROUTE_PATHS.aa });
     } else {
       redirectTo({ url: ROUTE_PATHS["ledger-list"] });
     }
   };
   useEffect(() => {
-    jump();
-    const openId = Taro.getStorageSync(STORAGE_KEYS.openId);
-    if (openId) {
-      jump();
-    } else {
-      Taro.login({
-        async success({ code, errMsg }) {
-          console.log(code);
-          
-          // if (code) {
-          //   //发起网络请求
-          //   try {
-          //     Toast.loading("登录中...");
-          //     const res = await apiWxLogin(code);
-          //     Toast.clear();
-          //     if (res.data.data) {
-          //       console.log("apiWxLogin", res.data.data);
-          //       jump();
-          //       return;
-          //     }
-          //     throw new Error(res.data.message);
-          //   } catch (error) {
-          //     Toast.fail(error.message);
-          //   }
-          // } else {
-          //   Toast.fail(errMsg);
-          // }
-        },
-      });
-    }
+    Taro.login({
+      async success({ code, errMsg }) {
+        if (code) {
+          try {
+            loading();
+            const res = await apiWxLogin(code);
+            hideLoading();
+            if (res.data.data) {
+              actionsUserStore.initUserStore(res.data.data);
+              jump();
+              return;
+            }
+            throw new Error(res.data.message);
+          } catch (error) {
+            toast.error(error.message);
+          }
+        } else {
+          toast.error(errMsg);
+        }
+      },
+    });
   }, []);
 
-  return null;
+  return (
+    <>
+      {!snap.userId ? <Button>重新尝试登录</Button> : null}
+      <Toast />
+      <Notify />
+    </>
+  );
 }

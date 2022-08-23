@@ -15,9 +15,11 @@ import { ROUTE_PATHS } from "src/router";
 
 import { Icon } from "@antmjs/vantui";
 import { navigateTo, redirectTo } from "src/utils/navigate";
-import { toast } from "src/utils/toast";
+import { hideLoading, loading, toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
 import "./index.less";
+import { ledgerStore } from "src/stores/ledger";
+import { getLedgerProfile } from "src/apis/ledger";
 
 function AA() {
   const state = useRef(
@@ -26,10 +28,31 @@ function AA() {
         billList: IBill[] = [];
         basicsFinished = false;
         visSidebar = false;
+        ledgerProfile: ILedgerProfile | null;
       })()
     )
   ).current;
   const snap = useSnapshot(state);
+
+  const apiGetLedgerProfile = async () => {
+    let ledgerId = ledgerStore.currentLedger?.ledgerId;
+    if (!ledgerId) return;
+    try {
+      loading();
+      const res = await getLedgerProfile(ledgerId);
+      hideLoading();
+      if (res.data.code === 0 && res.data.data) {
+        state.ledgerProfile = res.data.data;
+        return;
+      }
+      throw new Error(res.data.message);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+  useEffect(() => {
+    apiGetLedgerProfile();
+  }, []);
 
   const apiDelLedger = async (billId: number) => {
     try {
@@ -52,7 +75,7 @@ function AA() {
     pageIndex = isRefresh ? 0 : ++pageIndex;
     try {
       const res = await getBillList({
-        ledgerId: Number(Taro.getStorageSync("ledgerId")),
+        ledgerId: ledgerStore.currentLedger?.ledgerId ?? 0,
         billState: 0,
         pageIndex,
       });
@@ -88,13 +111,24 @@ function AA() {
       <View className="aa">
         <CellGroup className="header-wrap">
           <Cell
-            title={"xxx账本"}
+            title={snap.ledgerProfile?.name || "未获取到账单名称"}
             isLink
             onClick={() => {
               redirectTo({ url: ROUTE_PATHS["ledger-list"] });
             }}
           />
-          <Cell title={"账本成员"} label={"共xx人, 全员消费xx元"} isLink />
+          <Cell
+            title={"账本成员"}
+            label={`共${snap.ledgerProfile?.members?.length || 0}人, 全员消费${
+              snap.ledgerProfile?.totalConsume || 0
+            }元`}
+            isLink
+            onClick={() => {
+              Taro.setClipboardData({
+                data: String(snap.ledgerProfile?.ledgerId),
+              });
+            }}
+          />
           <Cell
             title={"其他操作"}
             isLink

@@ -1,8 +1,5 @@
-import {
-  Notify, Toast
-} from "@antmjs/vantui";
-
-export const loading = (msg: string = '...') => {
+import { Notify, Toast } from "@antmjs/vantui";
+export const loading = (msg: string = "...") => {
   Toast.loading(msg);
 };
 export const hideLoading = () => {

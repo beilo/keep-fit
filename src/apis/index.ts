@@ -1,3 +1,4 @@
+import { userStore } from "src/stores";
 import axios from "axios";
 import { TaroAdapter } from "axios-taro-adapter";
 
@@ -7,7 +8,7 @@ export const Http = axios.create({
   timeout: 10000,
   adapter: TaroAdapter, // add this line，添加这一行使用taroAdapter
   headers: {
-    token:'1234',
+    token: userStore.token,
     "User-Agent": "apifox/1.0.0 (https://www.apifox.cn)",
     "Content-Type": "application/json",
   },

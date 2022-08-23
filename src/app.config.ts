@@ -9,6 +9,8 @@ export default defineAppConfig({
     ROUTE_PATHS["empty-bill"],
     ROUTE_PATHS["add-bill"],
     ROUTE_PATHS["my-info"],
+    ROUTE_PATHS["add-ledger-user"],
+    
 
     ROUTE_PATHS.carb,
   ],

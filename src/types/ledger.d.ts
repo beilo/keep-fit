@@ -59,12 +59,78 @@ interface ILedger {
  * 账本查询参数
  */
 interface IGetLedgerParams {
-    /**
-     * 创建人
-     */
-    createUserId?: number;
-    /**
-     * 账本ID
-     */
-    ledgerId?: number;
+  /**
+   * 创建人
+   */
+  createUserId?: number;
+  /**
+   * 账本ID
+   */
+  ledgerId?: number;
+}
+
+interface ILedgerProfile {
+  /**
+   * 账单创建时间
+   */
+  createTime: string;
+  /**
+   * 创建人
+   */
+  createUserId: number;
+  /**
+   * 是否删除
+   */
+  isDel: number;
+  /**
+   * 账本ID
+   */
+  ledgerId: number;
+  /**
+   * 成员，成员
+   */
+  members: ILedgerUser[];
+  /**
+   * 账本名称
+   */
+  name: string;
+  /**
+   * 备注
+   */
+  remarks: null | string;
+  /**
+   * 总消费，仅限账单概述接口
+   */
+  totalConsume?: number;
+  /**
+   * 账单更新时间
+   */
+  updateTime: string;
+}
+
+interface ILedgerUser {
+  /**
+   * 个人已消费，仅限账单概述接口
+   */
+  consume?: number;
+  /**
+   * 角色,1 创建人, 2 普通成员
+   */
+  role: number;
+  /**
+   * 个人盈余，需收款为正数, 需付款为负数; 仅限账单概述接口
+   */
+  surplus?: number;
+  /**
+   * 个人已支付，仅限账单概述接口
+   */
+  totalPayment?: number;
+  /**
+   * 用户ID
+   */
+  userId: number;
+  /**
+   * 用户名
+   */
+  userName: string;
 }

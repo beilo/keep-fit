@@ -5,5 +5,5 @@ export const apiWxLogin = async (code: string) => {
 };
 
 export const getUserProfile = () => {
-  return Http.post<IApiModal<IUser>>("/user/profile", null);
+  return Http.post<IApiModal<IUser>>("/user/profile");
 };

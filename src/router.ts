@@ -7,6 +7,8 @@ export const ROUTE_PATHS = {
     'ledger-list':'pages/ledger-list/index',
     'home':'pages/home/index',
     'my-info':'pages/my-info/index',
+    'add-ledger-user':'pages/add-ledger-user/index',
+
 
     carb: 'pages/carb/index',
 }

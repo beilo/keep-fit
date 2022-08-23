@@ -25,6 +25,12 @@ const SideBarList = [
       navigateTo({ url: ROUTE_PATHS["my-info"] });
     },
   },
+  {
+    name: "加入新账本",
+    jump() {
+      navigateTo({ url: ROUTE_PATHS["add-ledger-user"] });
+    },
+  },
 ];
 
 interface IProps {

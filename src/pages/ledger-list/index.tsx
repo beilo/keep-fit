@@ -1,15 +1,17 @@
 import { Button, Cell, Dialog, Field, SwipeCell, Toast } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
 import { useEffect } from "react";
 import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
-import { navigateTo, redirectTo } from "src/utils/navigate";
+import { actionsLedgerStore, ledgerStore } from "src/stores/ledger";
+import { redirectTo } from "src/utils/navigate";
+import { useSnapshot } from "valtio";
 import "./index.less";
-import { setIsAdd, setLedgerList, setLedgerName, useStore } from "./store";
+import { setIsAdd, setLedgerName, useStore } from "./store";
 
 export default function LedgerList() {
   const snap = useStore();
+  const { ledgerList: snapLedgers } = useSnapshot(ledgerStore);
 
   const apiGetLedgerList = async () => {
     try {
@@ -17,7 +19,7 @@ export default function LedgerList() {
       const res = await getLedgerList({});
       Toast.clear();
       if (res.data.code === 0) {
-        setLedgerList(res.data.data);
+        res.data.data && actionsLedgerStore.setLedgerList(res.data.data);
         return;
       }
       throw new Error(res.data.message);
@@ -66,13 +68,13 @@ export default function LedgerList() {
     apiDelLedger(ledgerId);
   };
 
-  const jumpAA = (ledgerId: number) => {
-    Taro.setStorageSync("ledgerId", ledgerId);
+  const jumpAA = (ledger: ILedger) => {
+    actionsLedgerStore.setCurrentLedger(ledger);
     redirectTo({ url: ROUTE_PATHS.aa });
   };
   return (
     <View className="ledger-list">
-      {snap.ledgerList?.map((item) => {
+      {snapLedgers?.map((item) => {
         return (
           <SwipeCell
             rightWidth={60}
@@ -93,7 +95,7 @@ export default function LedgerList() {
               isLink
               title={item.name}
               onClick={() => {
-                jumpAA(item.ledgerId);
+                jumpAA(item as ILedger);
               }}
             />
           </SwipeCell>

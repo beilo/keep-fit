@@ -1,32 +1,17 @@
 import {
-  Button,
-  Cell,
-  Dialog,
-  Field,
-  Notify,
-  SwipeCell,
-  Toast,
+  Notify, Toast
 } from "@antmjs/vantui";
-import { View, Image, OpenData } from "@tarojs/components";
-import Taro from "@tarojs/taro";
-import { useEffect, useRef } from "react";
-import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
+import { OpenData, View } from "@tarojs/components";
+import { useEffect } from "react";
 import { getUserProfile } from "src/apis/user";
-import { ROUTE_PATHS } from "src/router";
-import { navigateTo } from "src/utils/navigate";
+import { userStore } from "src/stores";
+import { actionsUserStore } from "src/stores/user";
 import { hideLoading, loading, toast } from "src/utils/toast";
-import { proxy, useSnapshot } from "valtio";
+import { useSnapshot } from "valtio";
 import "./index.less";
 
 export default function MyInfo() {
-  const state = useRef(
-    proxy(
-      new (class State {
-        user?: IUser;
-      })()
-    )
-  ).current;
-  const snap = useSnapshot(state);
+  const snap = useSnapshot(userStore);
 
   const apiGetUserProfile = async () => {
     try {
@@ -34,7 +19,7 @@ export default function MyInfo() {
       const res = await getUserProfile();
       hideLoading();
       if (res.data.code === 0) {
-        state.user = res.data.data;
+        res.data.data && actionsUserStore.initUserStore(res.data.data);
         return;
       }
       throw new Error(res.data.message);
@@ -57,14 +42,10 @@ export default function MyInfo() {
         <View className="info-item">
           <OpenData type="userNickName" />
         </View>
-        {snap.user ? (
-          <>
-            <View className="info-item">{snap.user?.userId || ""}</View>
-            <View className="info-item">{snap.user?.userName || ""}</View>
-            <View className="info-item">{snap.user?.phone || ""}</View>
-            <View className="info-item">{snap.user?.email || ""}</View>
-          </>
-        ) : null}
+        {snap?.userId && <View className="info-item">{snap.userId}</View>}
+        {snap?.userName && <View className="info-item">{snap.userName}</View>}
+        {snap?.phone && <View className="info-item">{snap.phone}</View>}
+        {snap?.email && <View className="info-item">{snap.email}</View>}
       </View>
       <Toast />
       <Notify />

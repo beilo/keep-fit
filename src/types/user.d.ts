@@ -18,6 +18,10 @@ interface IUser {
    * 电话
    */
   phone: null | string;
+  /**
+   * token
+   */
+  token: string;
 }
 
 /**

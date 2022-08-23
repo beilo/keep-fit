@@ -5,7 +5,7 @@ import {
   Field,
   Notify,
   Stepper,
-  Toast,
+  Toast
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
@@ -14,11 +14,14 @@ import { ROUTE_PATHS } from "src/router";
 
 import "./index.less";
 
+import dayjs from "dayjs";
 import { addBill } from "src/apis/bill";
+import { userStore } from "src/stores";
+import { ledgerStore } from "src/stores/ledger";
+import { redirectTo } from "src/utils/navigate";
 import { STORAGE_KEYS } from "src/utils/storage";
-import { proxy, useSnapshot } from "valtio";
 import { toast } from "src/utils/toast";
-import { navigateTo, redirectTo } from "src/utils/navigate";
+import { proxy, useSnapshot } from "valtio";
 
 type IStateUser = IUser & {
   isPay: boolean;
@@ -42,30 +45,15 @@ export default function AddBill() {
   const snap = useSnapshot(state);
 
   useEffect(() => {
-    const initUsers = [
-      {
-        userId: 1,
-        userName: "用户1",
-      },
-      {
-        userId: 2,
-        userName: "用户2",
-      },
-      {
-        userId: 3,
-        userName: "用户3",
-      },
-    ];
-
-    state.currentUser = 1;
-    const temp = initUsers.map((user) => ({
+    state.currentUser = userStore.userId;
+    const temp = ledgerStore.currentLedger?.members.map((user) => ({
       ...user,
       isPay: state.currentUser === user.userId,
       payPrice: 0,
       isTakePart: true,
       step: 1,
     }));
-    state.users = temp;
+    temp && (state.users = temp);
   }, []);
 
   const { sumPrice, averagePrice } = useMemo(() => {
@@ -110,7 +98,7 @@ export default function AddBill() {
       ledgerId: Taro.getStorageSync(STORAGE_KEYS.ledgerId),
       categoryId: 1,
       billAmount: Number(sumPrice),
-      billTime: new Date().getTime().toString(),
+      billTime: dayjs().toISOString(),
       remarks: state.remarks,
       payers,
       participants,
@@ -118,20 +106,20 @@ export default function AddBill() {
     apiAddBill(param);
   };
   const apiAddBill = async (data: IAddBillParams) => {
-    toast.error('tiandafsdf');
+    toast.error("tiandafsdf");
 
     try {
       Toast.loading("新增中...");
       const res = await addBill(data);
       Toast.clear();
       if (res.data.code === 0) {
-        toast.success('添加成功')
+        toast.success("添加成功");
         return;
       }
       throw new Error(res.data.message);
     } catch (error) {
       toast.error(error.message);
-      error
+      error;
     }
   };
 
@@ -168,9 +156,8 @@ export default function AddBill() {
     const idx = draft.findIndex((_) => _.userId === state.currentUser);
     const user = draft[idx];
     const price = String(user.payPrice || "");
-    const _payPrice = value_ !== undefined
-      ? price + value_
-      : price.slice(0, price.length - 1);
+    const _payPrice =
+      value_ !== undefined ? price + value_ : price.slice(0, price.length - 1);
     user.payPrice = _payPrice;
   };
 

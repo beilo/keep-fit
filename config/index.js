@@ -1,4 +1,4 @@
-const path = require('path');
+const path = require("path");
 
 const config = {
   projectName: "keep-fit",
@@ -19,7 +19,7 @@ const config = {
   },
   framework: "react",
   alias: {
-    'src': path.resolve(__dirname, '..', 'src'),
+    src: path.resolve(__dirname, "..", "src"),
   },
   mini: {
     miniCssExtractPluginOption: {
