@@ -5,7 +5,7 @@ import {
   Field,
   Notify,
   Stepper,
-  Toast
+  Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
@@ -82,12 +82,12 @@ export default function AddBill() {
       payers.push({
         userId: user.userId,
         userName: user.userName,
-        amount: user.payPrice,
+        amount: Number(user.payPrice),
       });
       participants.push({
         userId: user.userId,
         userName: user.userName,
-        amount: averagePrice * user.step,
+        amount: Number(averagePrice * user.step),
       });
     });
     console.log("payers", payers);
@@ -95,7 +95,7 @@ export default function AddBill() {
     console.log("remark", state.remarks);
 
     const param = {
-      ledgerId: Taro.getStorageSync(STORAGE_KEYS.ledgerId),
+      ledgerId: ledgerStore.currentLedger?.ledgerId || 0,
       categoryId: 1,
       billAmount: Number(sumPrice),
       billTime: dayjs().toISOString(),
@@ -177,7 +177,7 @@ export default function AddBill() {
         </View>
         <CellGroup inset>
           {snap.users.map((user, idx) => {
-            if (!snap.visPay && idx !== 0) return null;
+            if (!snap.visPay && user.userId !== state.currentUser) return null;
             return (
               <Cell
                 key={user.userId}
@@ -217,6 +217,7 @@ export default function AddBill() {
                 renderTitle={
                   <View className="take-part_wrap">
                     <Checkbox
+                      className="take-part_wrap-checkbox"
                       value={user.isTakePart}
                       onClick={(e) => {
                         onCheckbox(e, user, "isTakePart");
