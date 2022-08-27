@@ -25,6 +25,11 @@ export const actionsUserStore = {
     userStore.userName = data.userName;
     userStore.phone = data.phone;
     userStore.email = data.email;
-    userStore.token = data.token;
+  },
+  setUserName(userName: string) {
+    userStore.userName = userName;
+  },
+  setToken(token: string) {
+    userStore.token = token;
   },
 };

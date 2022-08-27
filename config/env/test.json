@@ -1,0 +1,6 @@
+{
+  "env": "test",
+  "api": {
+    "aaLedger": "https://aa-ledger.sit.wskfz.com/api"
+  }
+}

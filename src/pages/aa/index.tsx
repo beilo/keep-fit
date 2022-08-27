@@ -12,14 +12,13 @@ import { useEffect, useRef } from "react";
 import { delBill, getBillList } from "src/apis/bill";
 import Sidebar from "src/components/sidebar";
 import { ROUTE_PATHS } from "src/router";
-
-import { Icon } from "@antmjs/vantui";
 import { navigateTo, redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
 import "./index.less";
 import { ledgerStore } from "src/stores/ledger";
 import { getLedgerProfile } from "src/apis/ledger";
+import dayjs from "dayjs";
 
 function AA() {
   const state = useRef(
@@ -125,7 +124,7 @@ function AA() {
             isLink
             onClick={() => {
               Taro.setClipboardData({
-                data: String(snap.ledgerProfile?.ledgerId),
+                data: String(snap.ledgerProfile?.ledgerCode),
               });
             }}
           />
@@ -146,6 +145,12 @@ function AA() {
           finished={snap.basicsFinished}
         >
           {snap.billList.map((item) => {
+            const payers = item.payers;
+            let payerText = payers?.[0]?.userName || "";
+            if (payerText && payers.length > 1) {
+              payerText = payers.length + "人";
+            }
+            payerText && (payerText += "付款");
             return (
               <SwipeCell
                 key={item.billId}
@@ -162,14 +167,14 @@ function AA() {
                 }
               >
                 <Cell
-                  title={item.categoryName}
-                  label={`${item.billTime} ${item.remarks}`}
+                  title={item.remarks || item.categoryName}
+                  label={dayjs(item.billTime).format("HH:mm")}
                   border={true}
                   renderExtra={
                     <View>
                       <View className="price">{item.billAmount}</View>
                       <View className="number-people">
-                        {item.participants?.length || 0}人消费
+                        {item.participants?.length || 0}人消费，{payerText}
                       </View>
                     </View>
                   }

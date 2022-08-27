@@ -79,16 +79,18 @@ export default function AddBill() {
     const payers: any[] = [],
       participants: any[] = [];
     state.users.forEach((user) => {
-      payers.push({
-        userId: user.userId,
-        userName: user.userName,
-        amount: Number(user.payPrice),
-      });
-      participants.push({
-        userId: user.userId,
-        userName: user.userName,
-        amount: Number(averagePrice * user.step),
-      });
+      user.isPay &&
+        payers.push({
+          userId: user.userId,
+          userName: user.userName,
+          amount: Number(user.payPrice),
+        });
+      user.isTakePart &&
+        participants.push({
+          userId: user.userId,
+          userName: user.userName,
+          amount: Number(averagePrice * user.step),
+        });
     });
     console.log("payers", payers);
     console.log("participants", participants);
@@ -106,8 +108,6 @@ export default function AddBill() {
     apiAddBill(param);
   };
   const apiAddBill = async (data: IAddBillParams) => {
-    toast.error("tiandafsdf");
-
     try {
       Toast.loading("新增中...");
       const res = await addBill(data);

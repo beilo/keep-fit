@@ -1,5 +1,13 @@
 const path = require("path");
 
+const { APP_ENV } = process.env;
+
+const envConfig = {
+  local: require("./env/local.json"),
+  test: require("./env/test.json"),
+  prod: require("./env/prod.json"),
+}[APP_ENV];
+
 const config = {
   projectName: "keep-fit",
   date: "2022-7-25",
@@ -12,7 +20,9 @@ const config = {
   sourceRoot: "src",
   outputRoot: "dist",
   plugins: [],
-  defineConstants: {},
+  defineConstants: {
+    CONFIG: JSON.stringify(envConfig),
+  },
   copy: {
     patterns: [],
     options: {},

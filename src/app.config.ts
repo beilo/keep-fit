@@ -10,7 +10,6 @@ export default defineAppConfig({
     ROUTE_PATHS["add-bill"],
     ROUTE_PATHS["my-info"],
     ROUTE_PATHS["add-ledger-user"],
-    
 
     ROUTE_PATHS.carb,
   ],
@@ -20,5 +19,4 @@ export default defineAppConfig({
     navigationBarTitleText: "WeChat",
     navigationBarTextStyle: "black",
   },
-  lazyCodeLoading: "requiredComponents",
 });

@@ -9,22 +9,14 @@
     "css": "less"
   },
   "scripts": {
-    "build:weapp": "taro build --type weapp",
-    "build:swan": "taro build --type swan",
-    "build:alipay": "taro build --type alipay",
-    "build:tt": "taro build --type tt",
-    "build:h5": "taro build --type h5",
-    "build:rn": "taro build --type rn",
-    "build:qq": "taro build --type qq",
-    "build:quickapp": "taro build --type quickapp",
-    "dev:weapp": "npm run build:weapp -- --watch",
-    "dev:swan": "npm run build:swan -- --watch",
-    "dev:alipay": "npm run build:alipay -- --watch",
-    "dev:tt": "npm run build:tt -- --watch",
-    "dev:h5": "npm run build:h5 -- --watch",
-    "dev:rn": "npm run build:rn -- --watch",
-    "dev:qq": "npm run build:qq -- --watch",
-    "dev:quickapp": "npm run build:quickapp -- --watch"
+    "taro:weapp": "taro build --type weapp",
+    "taro:h5": "taro build --type h5",
+    "prod:weapp": "cross-env APP_ENV=prod npm run taro:weapp",
+    "prod:h5": "cross-env APP_ENV=prod npm run taro:h5",
+    "test:weapp": "cross-env APP_ENV=test npm run taro:weapp",
+    "test:h5": "cross-env APP_ENV=test npm run taro:h5",
+    "dev:weapp": "cross-env APP_ENV=local npm run taro:weapp -- --watch",
+    "dev:h5": "cross-env APP_ENV=local npm run taro:h5 -- --watch"
   },
   "browserslist": [
     "last 3 versions",
@@ -59,6 +51,7 @@
     "@typescript-eslint/parser": "^5.20.0",
     "babel-plugin-import": "^1.13.5",
     "babel-preset-taro": "3.4.14",
+    "cross-env": "^7.0.3",
     "eslint": "^8.12.0",
     "eslint-config-taro": "3.4.14",
     "eslint-plugin-import": "^2.12.0",

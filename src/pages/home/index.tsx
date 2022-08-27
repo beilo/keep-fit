@@ -25,14 +25,17 @@ export default function Home() {
         if (code) {
           try {
             loading();
-            const res = await apiWxLogin(code);
+            const {
+              data: { data, message },
+            } = await apiWxLogin(code);
             hideLoading();
-            if (res.data.data) {
-              actionsUserStore.initUserStore(res.data.data);
+            if (data) {
+              actionsUserStore.initUserStore(data);
+              actionsUserStore.setToken(data.token);
               jump();
               return;
             }
-            throw new Error(res.data.message);
+            throw new Error(message);
           } catch (error) {
             toast.error(error.message);
           }

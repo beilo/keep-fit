@@ -2,18 +2,17 @@ import { Button, CellGroup, Field, Notify, Toast } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useEffect, useState } from "react";
-import { addLedgerUser } from "src/apis/ledger";
-import { userStore } from "src/stores";
+import { getLedgerJoin } from "src/apis/ledger";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import "./index.less";
 
 export default function AddNewLedger() {
-  const [ledgerId, setLedgerId] = useState("");
+  const [ledgerCode, setLedgerCode] = useState("");
 
   useEffect(() => {
     Taro.getClipboardData({
       success(res) {
-        setLedgerId(res.data);
+        setLedgerCode(res.data);
       },
     });
   }, []);
@@ -21,7 +20,7 @@ export default function AddNewLedger() {
   const apiAddLedgerUser = async () => {
     try {
       loading();
-      const res = await addLedgerUser(Number(ledgerId), userStore.userId);
+      const res = await getLedgerJoin(ledgerCode);
       hideLoading();
       if (res.data.code === 0) {
         toast.success("添加成功");
@@ -38,9 +37,9 @@ export default function AddNewLedger() {
       <CellGroup border className="add-ledger-user">
         <Field
           label="请输入账本id"
-          value={ledgerId}
+          value={ledgerCode}
           onChange={(event) => {
-            setLedgerId(event.detail);
+            setLedgerCode(event.detail);
           }}
         />
         <View className="add-btn-wrap">

@@ -106,6 +106,10 @@ interface ILedgerProfile {
    * 账单更新时间
    */
   updateTime: string;
+  /**
+   * 账本邀请码
+   */
+  ledgerCode: string;
 }
 
 interface ILedgerUser {
