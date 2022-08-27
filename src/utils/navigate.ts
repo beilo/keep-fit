@@ -14,14 +14,21 @@ interface Option {
     res: TaroGeneral.CallbackResult & { eventChannel: EventChannel }
   ) => void;
 }
-export const navigateTo = (opt: Option) => {
-  const url = "/" + opt.url;
-  Taro.navigateTo({ ...opt, url });
+
+type TOption = Omit<Option, "url"> & { url: string | string[] };
+const handleUrl = (url: TOption["url"]) => {
+  if (Array.isArray(url)) {
+    if (url.length > 1) return `/${url[1]}/${url[0]}`;
+    return `/${url[0]}`;
+  }
+  return `/${url}`;
+};
+export const navigateTo = (opt: TOption) => {
+  Taro.navigateTo({ ...opt, url: handleUrl(opt.url) });
 };
 
-export const redirectTo = (opt: Option) => {
-  const url = "/" + opt.url;
-  Taro.redirectTo({ ...opt, url });
+export const redirectTo = (opt: TOption) => {
+  Taro.redirectTo({ ...opt, url: handleUrl(opt.url) });
 };
 
 export const getPathParams = () => {

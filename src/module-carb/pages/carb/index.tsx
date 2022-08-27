@@ -60,8 +60,6 @@ export default function Carb() {
               value={snap.carbMultiple}
               asyncChange
               onChange={(event) => {
-                console.log("stepper", event);
-
                 action.setKgCarbMultiple(null, Number(event.detail));
               }}
             />

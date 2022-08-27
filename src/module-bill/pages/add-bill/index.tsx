@@ -92,9 +92,6 @@ export default function AddBill() {
           amount: Number(averagePrice * user.step),
         });
     });
-    console.log("payers", payers);
-    console.log("participants", participants);
-    console.log("remark", state.remarks);
 
     const param = {
       ledgerId: ledgerStore.currentLedger?.ledgerId || 0,

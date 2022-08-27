@@ -17,7 +17,6 @@ export const Http = axios.create({
 // interceptors for request
 Http.interceptors.request.use(
   function (config: any) {
-    console.log("headers", userStore.token);
     config.headers.token = userStore.token;
     return config;
   },
