@@ -8,19 +8,18 @@ import {
   Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import { useRouter } from "@tarojs/taro";
 import { useEffect, useMemo, useRef } from "react";
 import { ROUTE_PATHS } from "src/router";
 
 import "./index.less";
 
 import dayjs from "dayjs";
-import { addBill } from "src/apis/bill";
+import { addBill, updateBill } from "src/apis/bill";
 import { userStore } from "src/stores";
 import { ledgerStore } from "src/stores/ledger";
-import { redirectTo } from "src/utils/navigate";
-import { STORAGE_KEYS } from "src/utils/storage";
-import { toast } from "src/utils/toast";
+import { getPathParams, redirectTo } from "src/utils/navigate";
+import { hideLoading, loading, toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
 
 type IStateUser = IUser & {
@@ -43,17 +42,40 @@ export default function AddBill() {
     )
   ).current;
   const snap = useSnapshot(state);
+  const pathParams = getPathParams();
+  const billRef = useRef<IBill | null>(null);
 
   useEffect(() => {
-    state.currentUser = userStore.userId;
-    const temp = ledgerStore.currentLedger?.members.map((user) => ({
-      ...user,
-      isPay: state.currentUser === user.userId,
-      payPrice: 0,
-      isTakePart: true,
-      step: 1,
-    }));
-    temp && (state.users = temp);
+    let bill = (billRef.current = pathParams?.bill
+      ? JSON.parse(pathParams.bill)
+      : null);
+    const isEdit = bill ? true : false;
+    const userIdToIndexMap = new Map();
+    const initUser = ledgerStore.currentLedger?.members.map((user, idx) => {
+      userIdToIndexMap.set(user.userId, idx);
+      return {
+        ...user,
+        isPay: false,
+        payPrice: 0,
+        isTakePart: true,
+        step: 1,
+      };
+    });
+    if (!initUser) return;
+    if (isEdit) {
+      bill.payers?.forEach((user, idx) => {
+        if (idx === 0) {
+          state.currentUser = user.userId;
+        }
+        const initUserPants = initUser[userIdToIndexMap.get(user.userId)];
+        initUserPants.isPay = true;
+        initUserPants.payPrice = user.amount || 0;
+      });
+    } else {
+      state.currentUser = userStore.userId;
+      initUser[userIdToIndexMap.get(state.currentUser)].isPay = true;
+    }
+    state.users = initUser;
   }, []);
 
   const { sumPrice, averagePrice } = useMemo(() => {
@@ -92,9 +114,9 @@ export default function AddBill() {
           amount: Number(averagePrice * user.step),
         });
     });
-
     const param = {
       ledgerId: ledgerStore.currentLedger?.ledgerId || 0,
+      billId: Number(billRef.current?.billId || 0),
       categoryId: 1,
       billAmount: Number(sumPrice),
       billTime: dayjs().toISOString(),
@@ -106,9 +128,17 @@ export default function AddBill() {
   };
   const apiAddBill = async (data: IAddBillParams) => {
     try {
-      Toast.loading("新增中...");
-      const res = await addBill(data);
-      Toast.clear();
+      loading("新增中...");
+      let api;
+      if (data.billId) {
+        api = updateBill;
+        delete data.ledgerId;
+      } else {
+        api = addBill;
+        delete data.billId;
+      }
+      const res = await api(data);
+      hideLoading();
       if (res.data.code === 0) {
         toast.success("添加成功");
         return;
@@ -116,7 +146,6 @@ export default function AddBill() {
       throw new Error(res.data.message);
     } catch (error) {
       toast.error(error.message);
-      error;
     }
   };
 

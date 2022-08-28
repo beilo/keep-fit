@@ -75,33 +75,44 @@ interface IBill {
   updateTime: string;
 }
 
-interface IAddBillParams{
+interface IAddBillParams {
   /**
    * 账单金额
    */
-   billAmount: number;
-   /**
-    * 账单消费时间
-    */
-   billTime: string;
-   /**
-    * 类别ID
-    */
-   categoryId: number;
-   /**
-    * 账本ID
-    */
-   ledgerId: number;
-   /**
-    * 参与人，参与人
-    */
-   participants: IBillUser[];
-   /**
-    * 付款人，付款人
-    */
-   payers: IBillUser[];
-   /**
-    * 备注
-    */
-   remarks: string;
+  billAmount: number;
+  /**
+   * 账单消费时间
+   */
+  billTime: string;
+  /**
+   * 类别ID
+   */
+  categoryId: number;
+  /**
+   * 账本ID
+   */
+  ledgerId?: number;
+  /**
+   * 账单ID
+   */
+  billId?: number;
+  /**
+   * 参与人，参与人
+   */
+  participants: IBillUser[];
+  /**
+   * 付款人，付款人
+   */
+  payers: IBillUser[];
+  /**
+   * 备注
+   */
+  remarks: string;
+}
+
+interface IdParams {
+  /**
+   * id
+   */
+  id: number;
 }

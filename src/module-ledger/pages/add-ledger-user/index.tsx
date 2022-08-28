@@ -33,8 +33,8 @@ export default function AddNewLedger() {
   };
 
   return (
-    <>
-      <CellGroup border className="add-ledger-user">
+    <View className="add-ledger-user">
+      <CellGroup>
         <Field
           label="请输入账本id"
           value={ledgerCode}
@@ -42,14 +42,14 @@ export default function AddNewLedger() {
             setLedgerCode(event.detail);
           }}
         />
-        <View className="add-btn-wrap">
-          <Button type="primary" onClick={apiAddLedgerUser}>
-            加入新账本
-          </Button>
-        </View>
       </CellGroup>
+      <View className="add-btn-wrap">
+        <Button type="primary" onClick={apiAddLedgerUser}>
+          加入新账本
+        </Button>
+      </View>
       <Toast />
       <Notify />
-    </>
+    </View>
   );
 }

@@ -7,18 +7,18 @@ import {
   Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
+import dayjs from "dayjs";
 import { useEffect, useRef } from "react";
 import { delBill, getBillList } from "src/apis/bill";
+import { getLedgerProfile } from "src/apis/ledger";
 import Sidebar from "src/components/sidebar";
 import { ROUTE_PATHS } from "src/router";
-import { navigateTo, redirectTo } from "src/utils/navigate";
+import { ledgerStore } from "src/stores/ledger";
+import { addRouterParams, navigateTo, redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
 import "./index.less";
-import { ledgerStore } from "src/stores/ledger";
-import { getLedgerProfile } from "src/apis/ledger";
-import dayjs from "dayjs";
 
 function AA() {
   const state = useRef(
@@ -62,7 +62,7 @@ function AA() {
       }
       throw new Error(res.data.message);
     } catch (error) {
-      Toast.fail(error.message);
+      toast.error(error.message);
     }
   };
   const del = async (billId: number) => {
@@ -101,9 +101,10 @@ function AA() {
   const basicsLoadMore = async () => {
     await apiRefresh();
   };
-  useEffect(() => {
+
+  useDidShow(() => {
     basicsDoRefresh();
-  }, []);
+  });
 
   return (
     <>
@@ -154,15 +155,29 @@ function AA() {
             return (
               <SwipeCell
                 key={item.billId}
-                rightWidth={60}
+                rightWidth={120}
                 renderRight={
-                  <View
-                    className="del-btn"
-                    onClick={() => {
-                      del(item.billId);
-                    }}
-                  >
-                    删除
+                  <View className="btn-wrap">
+                    <View
+                      className="edit-btn"
+                      onClick={() => {
+                        navigateTo({
+                          url: addRouterParams(ROUTE_PATHS["add-bill"], {
+                            bill: JSON.stringify(item),
+                          }),
+                        });
+                      }}
+                    >
+                      编辑
+                    </View>
+                    <View
+                      className="del-btn"
+                      onClick={() => {
+                        del(item.billId);
+                      }}
+                    >
+                      删除
+                    </View>
                   </View>
                 }
               >

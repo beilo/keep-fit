@@ -1,10 +1,19 @@
-import { Button, Cell, Dialog, Field, SwipeCell, Toast } from "@antmjs/vantui";
+import {
+  Button,
+  Cell,
+  Dialog,
+  Field,
+  Notify,
+  SwipeCell,
+  Toast,
+} from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import { useEffect } from "react";
 import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
 import { actionsLedgerStore, ledgerStore } from "src/stores/ledger";
-import { redirectTo } from "src/utils/navigate";
+import { navigateTo, redirectTo } from "src/utils/navigate";
+import { hideLoading, loading, toast } from "src/utils/toast";
 import { useSnapshot } from "valtio";
 import "./index.less";
 import { setIsAdd, setLedgerName, useStore } from "./store";
@@ -15,16 +24,16 @@ export default function LedgerList() {
 
   const apiGetLedgerList = async () => {
     try {
-      Toast.loading("查询中...");
+      loading("查询中...");
       const res = await getLedgerList({});
-      Toast.clear();
+      hideLoading();
       if (res.data.code === 0) {
         res.data.data && actionsLedgerStore.setLedgerList(res.data.data);
         return;
       }
       throw new Error(res.data.message);
     } catch (error) {
-      Toast.fail(error.message);
+      toast.error(error.message);
     }
   };
   useEffect(() => {
@@ -33,16 +42,16 @@ export default function LedgerList() {
 
   const apiAddLedger = async () => {
     try {
-      Toast.loading("新增中...");
+      loading("新增中...");
       const res = await addLedger(snap.ledgerName);
-      Toast.clear();
+      hideLoading();
       if (res.data.code === 0) {
         apiGetLedgerList();
         return;
       }
       throw new Error(res.data.message);
     } catch (error) {
-      Toast.fail(error.message);
+      toast.error(error.message);
     }
     setIsAdd(false);
   };
@@ -52,16 +61,16 @@ export default function LedgerList() {
 
   const apiDelLedger = async (ledgerId: number) => {
     try {
-      Toast.loading("删除中...");
+      loading("删除中...");
       const res = await delLedger(ledgerId);
-      Toast.clear();
+      hideLoading();
       if (res.data.code === 0) {
         apiGetLedgerList();
         return;
       }
       throw new Error(res.data.message);
     } catch (error) {
-      Toast.fail(error.message);
+      toast.error(error.message);
     }
   };
   const del = async (ledgerId: number) => {
@@ -104,12 +113,22 @@ export default function LedgerList() {
 
       <View className="bottom-wrap">
         <Button
-          type="default"
+          plain
+          type="primary"
           onClick={() => {
             setIsAdd(true);
           }}
         >
           生成账本
+        </Button>
+        <Button
+          plain
+          type="info"
+          onClick={() => {
+            navigateTo({ url: ROUTE_PATHS["add-ledger-user"] });
+          }}
+        >
+          加入新账本
         </Button>
       </View>
 
@@ -132,6 +151,8 @@ export default function LedgerList() {
           }}
         />
       </Dialog>
+      <Toast />
+      <Notify />
     </View>
   );
 }

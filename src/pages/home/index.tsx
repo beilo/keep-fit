@@ -5,7 +5,6 @@ import { apiWxLogin } from "src/apis/user";
 import { ROUTE_PATHS } from "src/router";
 import { userStore } from "src/stores";
 import { ledgerStore } from "src/stores/ledger";
-import { actionsUserStore } from "src/stores/user";
 import { redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { getToken } from "src/utils/wx";

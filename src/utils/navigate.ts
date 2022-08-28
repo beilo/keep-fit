@@ -1,4 +1,5 @@
 import Taro, { EventChannel } from "@tarojs/taro";
+import qs from "querystring";
 
 interface Option {
   /** 需要跳转的应用内非 tabBar 的页面的路径, 路径后可以带参数。参数与路径之间使用 `?` 分隔，参数键与参数值用 `=` 相连，不同参数用 `&` 分隔；如 'path?key=value&key2=value2' */
@@ -33,4 +34,16 @@ export const redirectTo = (opt: TOption) => {
 
 export const getPathParams = () => {
   return Taro.getCurrentInstance().router?.params;
+};
+
+export const addRouterParams = (url: TOption["url"], params: any) => {
+  let _url = [...url];
+  for (const key in params) {
+    if (_url[0].indexOf("?")) {
+      _url[0] += "?";
+    }
+    _url[0] = `${_url[0]}&${key}=${params[key]}`;
+  }
+  console.log(_url);
+  return _url;
 };
