@@ -1,6 +1,7 @@
 import { userStore } from "src/stores";
 import axios from "axios";
 import { TaroAdapter } from "axios-taro-adapter";
+import { getToken } from "src/utils/wx";
 
 console.log("CONFIG", CONFIG);
 const API_URL = CONFIG.api.aaLedger;
@@ -30,6 +31,11 @@ Http.interceptors.response.use(
   function (response) {
     if (!response) {
       return Promise.reject(new Error("response为空，请检查网络"));
+    }
+    if (response.status === 401) {
+      return getToken()
+        .then((_) => Http(response.config))
+        .catch((err) => Promise.reject(err));
     }
     if (!response.data) {
       return Promise.reject(new Error("response.data为空，服务器异常"));

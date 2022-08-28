@@ -8,6 +8,7 @@ import { ledgerStore } from "src/stores/ledger";
 import { actionsUserStore } from "src/stores/user";
 import { redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
+import { getToken } from "src/utils/wx";
 import { useSnapshot } from "valtio";
 
 export default function Home() {
@@ -20,30 +21,16 @@ export default function Home() {
     }
   };
   useEffect(() => {
-    Taro.login({
-      async success({ code, errMsg }) {
-        if (code) {
-          try {
-            loading();
-            const {
-              data: { data, message },
-            } = await apiWxLogin(code);
-            hideLoading();
-            if (data) {
-              actionsUserStore.initUserStore(data);
-              actionsUserStore.setToken(data.token);
-              jump();
-              return;
-            }
-            throw new Error(message);
-          } catch (error) {
-            toast.error(error.message);
-          }
-        } else {
-          toast.error(errMsg);
-        }
-      },
-    });
+    void (async function () {
+      try {
+        loading();
+        await getToken();
+        hideLoading();
+        jump();
+      } catch (error) {
+        toast.error(error.message);
+      }
+    })();
   }, []);
 
   return (
