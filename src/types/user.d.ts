@@ -40,4 +40,12 @@ interface IBillUser {
    * 用户名
    */
   userName: string;
+  /**
+   * 参与份额
+   */
+  copiesNumber: number;
+  /**
+   * 头像
+   */
+  avatarUrl: string;
 }

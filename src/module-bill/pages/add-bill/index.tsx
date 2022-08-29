@@ -8,7 +8,6 @@ import {
   Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import { useRouter } from "@tarojs/taro";
 import { useEffect, useMemo, useRef } from "react";
 import { ROUTE_PATHS } from "src/router";
 
@@ -26,7 +25,7 @@ type IStateUser = IUser & {
   isPay: boolean;
   payPrice: number;
   isTakePart: boolean;
-  step: number;
+  copiesNumber: number;
 };
 
 export default function AddBill() {
@@ -58,7 +57,7 @@ export default function AddBill() {
         isPay: false,
         payPrice: 0,
         isTakePart: true,
-        step: 1,
+        copiesNumber: 1,
       };
     });
     if (!initUser) return;
@@ -70,6 +69,10 @@ export default function AddBill() {
         const initUserPants = initUser[userIdToIndexMap.get(user.userId)];
         initUserPants.isPay = true;
         initUserPants.payPrice = user.amount || 0;
+      });
+      bill.participants?.forEach((user) => {
+        initUser[userIdToIndexMap.get(user.userId)].copiesNumber =
+          user.copiesNumber;
       });
     } else {
       state.currentUser = userStore.userId;
@@ -86,7 +89,7 @@ export default function AddBill() {
         sumPrice += Number(user.payPrice);
       }
       if (user.isTakePart) {
-        takePartLength += user.step;
+        takePartLength += user.copiesNumber;
       }
     });
     return {
@@ -111,7 +114,8 @@ export default function AddBill() {
         participants.push({
           userId: user.userId,
           userName: user.userName,
-          amount: Number(averagePrice * user.step),
+          amount: Number(averagePrice * user.copiesNumber),
+          copiesNumber: user.copiesNumber,
         });
     });
     const param = {
@@ -172,10 +176,10 @@ export default function AddBill() {
       draft[idx].isTakePart = !user.isTakePart;
     }
   };
-  const onStep = (user, step) => {
+  const onCopiesNumber = (user, copiesNumber) => {
     const draft = state.users;
     const idx = draft.findIndex((_) => _.userId === user.userId);
-    draft[idx].step = step;
+    draft[idx].copiesNumber = copiesNumber;
   };
 
   const calculate = (draft, value_) => {
@@ -239,7 +243,7 @@ export default function AddBill() {
               <Cell
                 key={user.userId}
                 border={false}
-                value={user.isTakePart ? averagePrice * user.step : 0}
+                value={user.isTakePart ? averagePrice * user.copiesNumber : 0}
                 renderTitle={
                   <View className="take-part_wrap">
                     <Checkbox
@@ -253,11 +257,11 @@ export default function AddBill() {
                     </Checkbox>
                     <Stepper
                       className="take-part_wrap-step"
-                      value={user.step}
+                      value={user.copiesNumber}
                       integer
                       min={1}
                       onChange={(e) => {
-                        onStep(user, e.detail);
+                        onCopiesNumber(user, e.detail);
                       }}
                     />
                   </View>
