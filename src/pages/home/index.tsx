@@ -1,9 +1,11 @@
 import { Button, Notify, Toast } from "@antmjs/vantui";
 import Taro from "@tarojs/taro";
 import { useEffect } from "react";
+import { categoryFind } from "src/apis/category";
 import { apiWxLogin } from "src/apis/user";
 import { ROUTE_PATHS } from "src/router";
 import { userStore } from "src/stores";
+import { actionsCategoryStore } from "src/stores/category";
 import { ledgerStore } from "src/stores/ledger";
 import { redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
@@ -26,11 +28,19 @@ export default function Home() {
         await getToken();
         hideLoading();
         jump();
+        apiCategoryFind();
       } catch (error) {
         toast.error(error.message);
       }
     })();
   }, []);
+
+  const apiCategoryFind = async () => {
+    const { data } = await categoryFind({});
+    if (data?.code === 0) {
+      actionsCategoryStore.initCategoryStore(data.data || []);
+    }
+  };
 
   return (
     <>

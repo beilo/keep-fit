@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   openId: "openId",
   user: "user",
   ledgerStore: "ledgerStore",
+  category: "category",
 };
 
 type TStorageKeys = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
