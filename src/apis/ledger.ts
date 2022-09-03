@@ -19,3 +19,15 @@ export const getLedgerProfile = async (ledgerId: number) => {
 export const getLedgerJoin = async (ledgerCode: string) => {
   return Http.post<IApiModal<ILedgerProfile>>("/ledger/join", { ledgerCode });
 };
+
+export const ledgerSettlePlan = async (ledgerId: number) => {
+  return Http.post<IApiModal<ILedgerSettlePlan[]>>("/ledger/settlePlan", {
+    ledgerId,
+  });
+};
+
+export const ledgerSettleAll = async (ledgerId: number) => {
+  return Http.post<IApiModal<any>>("/ledger/settleAll", {
+    ledgerId,
+  });
+};

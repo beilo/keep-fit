@@ -1,6 +1,7 @@
 import { Icon } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import { ROUTE_PATHS } from "src/router";
+import { ledgerStore } from "src/stores/ledger";
 
 import { navigateTo } from "src/utils/navigate";
 
@@ -29,6 +30,14 @@ const SideBarList = [
     name: "加入新账本",
     jump() {
       navigateTo({ url: ROUTE_PATHS["add-ledger-user"] });
+    },
+  },
+  {
+    name: "清账",
+    jump() {
+      if (ledgerStore.currentLedger?.ledgerId) {
+        navigateTo({ url: ROUTE_PATHS["empty-ledger"] });
+      }
     },
   },
 ];

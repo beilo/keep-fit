@@ -4,8 +4,8 @@ export const ROUTE_PATHS = {
   //ledger
   "add-ledger-user": ["pages/add-ledger-user/index", "module-ledger"],
   "ledger-list": ["pages/ledger-list/index", "module-ledger"],
+  "empty-ledger": ["pages/empty-ledger/index", "module-ledger"],
   // bill
-  "empty-bill": ["pages/empty-bill/index", "module-bill"],
   "invite-bill": ["pages/invite-bill/index", "module-bill"],
   "add-bill": ["pages/add-bill/index", "module-bill"],
   // user

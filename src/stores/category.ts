@@ -14,7 +14,6 @@ subscribe(categoryStore, () => {
 
 export const actionsCategoryStore = {
   initCategoryStore(data: ICategoryFind[]) {
-    debugger;
     categoryStore.length = 0;
     categoryStore.push(...data);
   },

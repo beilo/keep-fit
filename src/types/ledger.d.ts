@@ -138,3 +138,56 @@ interface ILedgerUser {
    */
   userName: string;
 }
+
+interface ILedgerSettlePlan {
+  /**
+   * 还款金额
+   */
+  amount: number;
+  /**
+   * 还款人
+   */
+  from: ILedgerSettlePlanUser;
+  /**
+   * 收款人
+   */
+  to: ILedgerSettlePlanUser;
+}
+
+/**
+ * 还款人
+ *
+ * 账本成员
+ *
+ * 收款人
+ */
+interface ILedgerSettlePlanUser {
+  /**
+   * 头像url
+   */
+  avatarUrl: null | string;
+  /**
+   * 个人已消费，仅限账单概述接口
+   */
+  consume?: number;
+  /**
+   * 角色,1 创建人, 2 普通成员
+   */
+  role: number;
+  /**
+   * 个人盈余，需收款为正数, 需付款为负数; 仅限账单概述接口
+   */
+  surplus?: number;
+  /**
+   * 个人已支付，仅限账单概述接口
+   */
+  totalPayment?: number;
+  /**
+   * 用户ID
+   */
+  userId: number;
+  /**
+   * 用户名
+   */
+  userName: string;
+}

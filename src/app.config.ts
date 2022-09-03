@@ -9,11 +9,15 @@ export default defineAppConfig({
     },
     {
       root: "module-bill",
-      pages: [ROUTE_PATHS["add-bill"][0], ROUTE_PATHS["empty-bill"][0]],
+      pages: [ROUTE_PATHS["add-bill"][0]],
     },
     {
       root: "module-ledger",
-      pages: [ROUTE_PATHS["ledger-list"][0], ROUTE_PATHS["add-ledger-user"][0]],
+      pages: [
+        ROUTE_PATHS["ledger-list"][0],
+        ROUTE_PATHS["add-ledger-user"][0],
+        ROUTE_PATHS["empty-ledger"][0],
+      ],
     },
     {
       root: "module-carb",
