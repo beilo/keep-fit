@@ -56,7 +56,7 @@ export default function AddBill() {
         ...user,
         isPay: false,
         payPrice: 0,
-        isTakePart: true,
+        isTakePart: isEdit ? false : true,
         copiesNumber: 1,
       };
     });
@@ -71,8 +71,9 @@ export default function AddBill() {
         initUserPants.payPrice = user.amount || 0;
       });
       bill.participants?.forEach((user) => {
-        initUser[userIdToIndexMap.get(user.userId)].copiesNumber =
-          user.copiesNumber;
+        const userIdx = userIdToIndexMap.get(user.userId);
+        initUser[userIdx].copiesNumber = user.copiesNumber;
+        initUser[userIdx].isTakePart = true;
       });
     } else {
       state.currentUser = userStore.userId;
@@ -190,12 +191,11 @@ export default function AddBill() {
       value_ !== undefined ? price + value_ : price.slice(0, price.length - 1);
     user.payPrice = _payPrice;
   };
-
   return (
     <View className="popup-add-bill">
       <View className="top_wrap">
         <CellGroup title="消费" inset>
-          <Cell title="其他" border={false} value={sumPrice} />
+          <Cell title="日常" border={false} value={sumPrice} />
         </CellGroup>
         <View
           className="van-cell-group__title van-cell-group__title--inset"
@@ -207,9 +207,17 @@ export default function AddBill() {
         </View>
         <CellGroup inset>
           {snap.users.map((user, idx) => {
-            if (!snap.visPay && user.userId !== state.currentUser) return null;
+            if (
+              !snap.visPay &&
+              user.userId !== state.currentUser &&
+              !user.isPay
+            )
+              return null;
             return (
               <Cell
+                className={
+                  state.currentUser === user.userId ? "check-pay-wrap" : ""
+                }
                 key={user.userId}
                 border={false}
                 value={user.payPrice}
