@@ -3,6 +3,7 @@ import { View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useEffect, useState } from "react";
 import { getLedgerJoin } from "src/apis/ledger";
+import { navigateBack } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import "./index.less";
 
@@ -24,6 +25,7 @@ export default function AddNewLedger() {
       hideLoading();
       if (res.data.code === 0) {
         toast.success("添加成功");
+        navigateBack({ delta: 1 });
         return;
       }
       throw new Error(res.data.message);

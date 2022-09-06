@@ -8,6 +8,7 @@ import {
   Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
+import { useDidShow } from "@tarojs/taro";
 import { useEffect } from "react";
 import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
@@ -36,9 +37,10 @@ export default function LedgerList() {
       toast.error(error.message);
     }
   };
-  useEffect(() => {
+
+  useDidShow(() => {
     apiGetLedgerList();
-  }, []);
+  });
 
   const apiAddLedger = async () => {
     try {
