@@ -20,6 +20,7 @@ import { ledgerStore } from "src/stores/ledger";
 import { getPathParams, redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
+import RemarkInput from "./components/remark-input";
 
 type IStateUser = IUser & {
   isPay: boolean;
@@ -220,8 +221,8 @@ export default function AddBill() {
                 }
                 key={user.userId}
                 border={false}
-                value={user.payPrice}
-                onClick={() => (state.currentUser = user.userId)}
+                // value={user.payPrice}
+
                 renderTitle={
                   <Checkbox
                     value={user.isPay}
@@ -231,6 +232,14 @@ export default function AddBill() {
                   >
                     {user.userName}
                   </Checkbox>
+                }
+                renderExtra={
+                  <View
+                    className="pay-wrap"
+                    onClick={() => (state.currentUser = user.userId)}
+                  >
+                    {user.payPrice}
+                  </View>
                 }
               />
             );
@@ -279,47 +288,15 @@ export default function AddBill() {
           })}
         </CellGroup>
       </View>
-      <View className="remark_input">
-        <Field
-          value={snap.remarks}
-          className="remark_input"
-          placeholder="备注"
-          border={false}
-          onChange={(e) => {
-            state.remarks = e.detail;
-          }}
-        />
-        <View className="number-key-board_wrap">
-          <View className="number-key-board_left">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, ".", "关闭"].map((item) => {
-              return (
-                <View
-                  key={item}
-                  className="number-key-board_item"
-                  onClick={() => {
-                    onInput(item);
-                  }}
-                >
-                  {item}
-                </View>
-              );
-            })}
-          </View>
-          <View className="number-key-board_right">
-            <View
-              className="number-key-board_del"
-              onClick={() => {
-                onDelete();
-              }}
-            >
-              x
-            </View>
-            <View className="number-key-board_confirm" onClick={onSubmit}>
-              确定
-            </View>
-          </View>
-        </View>
-      </View>
+      <RemarkInput
+        remarks={snap.remarks}
+        onChangeRemarks={(e) => {
+          state.remarks = e.detail;
+        }}
+        onInput={onInput}
+        onDelete={onDelete}
+        onSubmit={onSubmit}
+      />
       <Toast />
       <Notify />
     </View>
