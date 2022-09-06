@@ -217,12 +217,10 @@ export default function AddBill() {
             return (
               <Cell
                 className={
-                  state.currentUser === user.userId ? "check-pay-wrap" : ""
+                  snap.currentUser === user.userId ? "check-pay-wrap" : ""
                 }
                 key={user.userId}
                 border={false}
-                // value={user.payPrice}
-
                 renderTitle={
                   <Checkbox
                     value={user.isPay}
@@ -235,8 +233,10 @@ export default function AddBill() {
                 }
                 renderExtra={
                   <View
-                    className="pay-wrap"
-                    onClick={() => (state.currentUser = user.userId)}
+                    className="pay-value"
+                    onClick={() => {
+                      state.currentUser = user.userId;
+                    }}
                   >
                     {user.payPrice}
                   </View>
