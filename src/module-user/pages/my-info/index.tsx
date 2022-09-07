@@ -2,8 +2,10 @@ import { Dialog, Field, Notify, Popup, Toast } from "@antmjs/vantui";
 import { OpenData, View } from "@tarojs/components";
 import { useEffect, useState } from "react";
 import { getUserProfile, loginout, userUpdate } from "src/apis/user";
+import { ROUTE_PATHS } from "src/router";
 import { userStore } from "src/stores";
 import { actionsUserStore } from "src/stores/user";
+import { redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { useSnapshot } from "valtio";
 import "./index.less";
@@ -38,6 +40,7 @@ export default function MyInfo() {
       hideLoading();
       if (res.data.code === 0) {
         actionsUserStore.setUserName(userName);
+        redirectTo({ url: ROUTE_PATHS["ledger-list"] });
         return;
       }
       throw new Error(res.data.message);
