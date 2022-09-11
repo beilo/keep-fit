@@ -49,9 +49,9 @@ function AA() {
       toast.error(error.message);
     }
   };
-  useEffect(() => {
+  useDidShow(() => {
     apiGetLedgerProfile();
-  }, []);
+  });
 
   const apiDelLedger = async (billId: number) => {
     try {

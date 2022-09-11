@@ -10,6 +10,7 @@ class UserStore implements IUser {
   email: string | null;
   phone: string | null;
   token: string;
+  avatarUrl: string | null;
 }
 
 export const userStore = proxy(
