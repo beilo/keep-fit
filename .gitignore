@@ -14,3 +14,6 @@ coverage
 .history/
 .vscode
 .vscode/settings.json
+project.config.json
+project.private.config.json
+.cloudbase\container\debug.json
