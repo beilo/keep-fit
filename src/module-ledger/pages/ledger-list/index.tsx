@@ -9,7 +9,7 @@ import {
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import { useDidShow } from "@tarojs/taro";
-import { useEffect } from "react";
+import { useState } from "react";
 import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
 import { actionsLedgerStore, ledgerStore } from "src/stores/ledger";
@@ -17,10 +17,10 @@ import { navigateTo, redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { useSnapshot } from "valtio";
 import "./index.less";
-import { setIsAdd, setLedgerName, useStore } from "./store";
 
 export default function LedgerList() {
-  const snap = useStore();
+  const [ledgerName, setLedgerName] = useState("");
+  const [isAdd, setIsAdd] = useState(false);
   const { ledgerList: snapLedgers } = useSnapshot(ledgerStore);
 
   const apiGetLedgerList = async () => {
@@ -45,7 +45,7 @@ export default function LedgerList() {
   const apiAddLedger = async () => {
     try {
       loading("新增中...");
-      const res = await addLedger(snap.ledgerName);
+      const res = await addLedger(ledgerName);
       hideLoading();
       if (res.data.code === 0) {
         apiGetLedgerList();
@@ -139,7 +139,7 @@ export default function LedgerList() {
         title="新增账本"
         showCancelButton
         showConfirmButton
-        show={snap.isAdd}
+        show={isAdd}
         onClose={() => {
           setIsAdd(false);
         }}
@@ -147,7 +147,7 @@ export default function LedgerList() {
       >
         <Field
           placeholder="请输入账本名称"
-          value={snap.ledgerName}
+          value={ledgerName}
           onChange={(e) => {
             setLedgerName(e.detail);
           }}

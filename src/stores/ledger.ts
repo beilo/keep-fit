@@ -8,9 +8,10 @@ class LedgerStore {
   ledgerList: ILedger[] = [];
   currentLedger: ILedger | null = null;
 }
-export const ledgerStore = proxy(
-  (getStorageSync(STORAGE_KEYS.ledgerStore) as LedgerStore) || new LedgerStore()
-);
+const proxyValue =
+  (getStorageSync(STORAGE_KEYS.ledgerStore) as LedgerStore) ||
+  new LedgerStore();
+export const ledgerStore = proxy(proxyValue);
 subscribe(ledgerStore, () => {
   setStorageSync(STORAGE_KEYS.ledgerStore, ledgerStore);
 });
