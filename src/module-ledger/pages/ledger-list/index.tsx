@@ -8,7 +8,7 @@ import {
   Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
-import { useDidShow } from "@tarojs/taro";
+import {useDidShow, useRouter} from "@tarojs/taro";
 import { useState } from "react";
 import { addLedger, delLedger, getLedgerList } from "src/apis/ledger";
 import { ROUTE_PATHS } from "src/router";
@@ -37,9 +37,15 @@ export default function LedgerList() {
       toast.error(error.message);
     }
   };
-
+  const router = useRouter()
   useDidShow(() => {
-    apiGetLedgerList();
+    void async function (){
+      await apiGetLedgerList();
+      const idx = ledgerStore.ledgerList.findIndex(_=>_.ledgerId === ledgerStore.currentLedger?.ledgerId)
+      if(idx !== -1 && router.params.source === 'home'){
+        jumpAA(ledgerStore.ledgerList[idx])
+      }
+    }()
   });
 
   const apiAddLedger = async () => {

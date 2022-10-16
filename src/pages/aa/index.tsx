@@ -9,7 +9,7 @@ import {
 import { View } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
 import dayjs from "dayjs";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { delBill, getBillList } from "src/apis/bill";
 import { getLedgerProfile } from "src/apis/ledger";
 import Sidebar from "src/components/sidebar";

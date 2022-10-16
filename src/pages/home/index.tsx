@@ -1,12 +1,9 @@
 import { Button, Notify, Toast } from "@antmjs/vantui";
-import Taro from "@tarojs/taro";
 import { useEffect } from "react";
 import { categoryFind } from "src/apis/category";
-import { apiWxLogin } from "src/apis/user";
 import { ROUTE_PATHS } from "src/router";
 import { userStore } from "src/stores";
 import { actionsCategoryStore } from "src/stores/category";
-import { ledgerStore } from "src/stores/ledger";
 import { redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { getToken } from "src/utils/wx";
@@ -15,11 +12,7 @@ import { useSnapshot } from "valtio";
 export default function Home() {
   const snap = useSnapshot(userStore);
   const jump = () => {
-    if (ledgerStore.currentLedger) {
-      redirectTo({ url: ROUTE_PATHS.aa });
-    } else {
-      redirectTo({ url: ROUTE_PATHS["ledger-list"] });
-    }
+    redirectTo({ url: ROUTE_PATHS["ledger-list"] ,params:'?source=home'});
   };
   useEffect(() => {
     void (async function () {
@@ -28,7 +21,7 @@ export default function Home() {
         await getToken();
         hideLoading();
         jump();
-        apiCategoryFind();
+        // apiCategoryFind();
       } catch (error) {
         toast.error(error.message);
       }
