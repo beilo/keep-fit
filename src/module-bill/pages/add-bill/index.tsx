@@ -91,6 +91,7 @@ export default function AddBill() {
                 initUser[userIdx].copiesNumber = user.copiesNumber;
                 initUser[userIdx].isTakePart = true;
             });
+            state.remarks = bill.remarks;
         } else {
             state.currentUser = userStore.userId;
             initUser[userIdToIndexMap.get(state.currentUser)].isPay = true;
