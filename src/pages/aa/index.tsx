@@ -16,25 +16,34 @@ import Sidebar from "src/components/sidebar";
 import { ROUTE_PATHS } from "src/router";
 import { ledgerStore } from "src/stores/ledger";
 import { addRouterParams, navigateTo, redirectTo } from "src/utils/navigate";
-import { hideLoading, loading, toast } from "src/utils/toast";
+import { toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
 import styles from './index.module.less';
 import classNames from 'classnames/bind';
+import { PopDetail } from "./components/pop-detail";
 const cx = classNames.bind(styles);
 
-
+class IPopDetail {
+  vis: boolean;
+  bill: IBill | undefined
+}
+class State {
+  billList: IBill[] = [];
+  basicsFinished = false;
+  visSidebar = false;
+  ledgerProfile: ILedgerProfile | null;
+  popDetail: IPopDetail = {
+    vis: false,
+    bill: undefined
+  }
+}
 function AA() {
   const state = useRef(
     proxy(
-      new (class State {
-        billList: IBill[] = [];
-        basicsFinished = false;
-        visSidebar = false;
-        ledgerProfile: ILedgerProfile | null;
-      })()
+      new State()
     )
   ).current;
-  const snap = useSnapshot(state);
+  const snap = useSnapshot(state) as typeof state;
 
   const apiGetLedgerProfile = async () => {
     let ledgerId = ledgerStore.currentLedger?.ledgerId;
@@ -107,6 +116,26 @@ function AA() {
 
   return (
     <>
+      <PopDetail vis={snap.popDetail.vis} bill={snap.popDetail.bill}
+        onClose={() => {
+          state.popDetail.vis = false;
+        }}
+        onEdit={() => {
+          navigateTo({
+            url: addRouterParams(ROUTE_PATHS["add-bill"], {
+              bill: JSON.stringify(state.popDetail.bill),
+            }),
+          });
+          state.popDetail.vis = false;
+        }}
+        onDel={() => {
+          const billId = state.popDetail.bill?.billId;
+          if (billId) {
+            del(billId);
+            state.popDetail.vis = false;
+          }
+        }}
+      />
       <View className={cx('aa')}>
         <CellGroup className={cx('header-wrap')}>
           <Cell
@@ -154,30 +183,10 @@ function AA() {
               <SwipeCell
                 key={item.billId}
                 rightWidth={120}
-                renderRight={
-                  <View className={cx("btn-wrap")}>
-                    <View
-                      className={cx("edit-btn")}
-                      onClick={() => {
-                        navigateTo({
-                          url: addRouterParams(ROUTE_PATHS["add-bill"], {
-                            bill: JSON.stringify(item),
-                          }),
-                        });
-                      }}
-                    >
-                      编辑
-                    </View>
-                    <View
-                      className={cx("del-btn")}
-                      onClick={() => {
-                        del(item.billId);
-                      }}
-                    >
-                      删除
-                    </View>
-                  </View>
-                }
+                onClick={() => {
+                  state.popDetail.vis = true;
+                  state.popDetail.bill = item;
+                }}
               >
                 <Cell
                   title={item.remarks || item.categoryName}
