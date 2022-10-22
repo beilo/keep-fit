@@ -12,18 +12,19 @@ import { useSnapshot } from "valtio";
 export default function Home() {
   const snap = useSnapshot(userStore);
   const jump = () => {
-    redirectTo({ url: ROUTE_PATHS["ledger-list"] ,params:'?source=home'});
+    redirectTo({ url: ROUTE_PATHS["ledger-list"], params: '?source=home' });
   };
   useEffect(() => {
     void (async function () {
       try {
-        loading();
+        loading("获取token");
         await getToken();
-        hideLoading();
         jump();
         // apiCategoryFind();
       } catch (error) {
         toast.error(error.message);
+      } finally {
+        hideLoading();
       }
     })();
   }, []);

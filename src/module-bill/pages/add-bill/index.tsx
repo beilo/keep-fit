@@ -97,6 +97,9 @@ export default function AddBill() {
             initUser[userIdToIndexMap.get(state.currentUser)].isPay = true;
         }
         state.users = initUser;
+        return () => {
+            toast.clear()
+        }
     }, []);
 
     const { sumPrice, takePartAmounts } = useMemo(() => {

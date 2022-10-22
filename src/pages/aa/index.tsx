@@ -40,9 +40,7 @@ function AA() {
     let ledgerId = ledgerStore.currentLedger?.ledgerId;
     if (!ledgerId) return;
     try {
-      loading();
       const res = await getLedgerProfile(ledgerId);
-      hideLoading();
       if (res.data.code === 0 && res.data.data) {
         state.ledgerProfile = res.data.data;
         return;
@@ -53,6 +51,7 @@ function AA() {
     }
   };
   useDidShow(() => {
+    basicsDoRefresh();
     apiGetLedgerProfile();
   });
 
@@ -105,10 +104,6 @@ function AA() {
     await apiRefresh();
   };
 
-  useDidShow(() => {
-    basicsDoRefresh();
-  });
-
 
   return (
     <>
@@ -123,9 +118,8 @@ function AA() {
           />
           <Cell
             title={"账本成员"}
-            label={`共${snap.ledgerProfile?.members?.length || 0}人, 全员消费${
-              snap.ledgerProfile?.totalConsume || 0
-            }元`}
+            label={`共${snap.ledgerProfile?.members?.length || 0}人, 全员消费${snap.ledgerProfile?.totalConsume || 0
+              }元`}
             isLink
             onClick={() => {
               Taro.setClipboardData({

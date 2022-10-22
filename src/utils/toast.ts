@@ -19,4 +19,7 @@ export const toast = {
       type: "danger",
     });
   },
+  clear() {
+    Notify.clear()
+  }
 };
