@@ -46,8 +46,8 @@ export function PopDetail({
             </CellGroup>}
 
             <View className={cx('btn-wrap')}>
-                <Button className={cx('btn')} type="primary" plain onClick={onEdit}>编辑</Button>
                 <Button className={cx('btn')} type="danger" plain onClick={onDel}>删除</Button>
+                <Button className={cx('btn')} type="primary" plain onClick={onEdit}>编辑</Button>
             </View>
         </View>
     </Popup >
