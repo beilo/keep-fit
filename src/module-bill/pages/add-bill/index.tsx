@@ -6,20 +6,20 @@ import {
     Stepper,
     Toast,
 } from "@antmjs/vantui";
-import {View} from "@tarojs/components";
-import {useEffect, useMemo, useRef} from "react";
-import {ROUTE_PATHS} from "src/router";
+import { View } from "@tarojs/components";
+import { useEffect, useMemo, useRef } from "react";
+import { ROUTE_PATHS } from "src/router";
 
 import "./index.less";
 import dayjs from "dayjs";
-import {addBill, updateBill} from "src/apis/bill";
-import {userStore} from "src/stores";
-import {ledgerStore} from "src/stores/ledger";
-import {getPathParams, redirectTo} from "src/utils/navigate";
-import {hideLoading, loading, toast} from "src/utils/toast";
-import {proxy, useSnapshot} from "valtio";
+import { addBill, updateBill } from "src/apis/bill";
+import { userStore } from "src/stores";
+import { ledgerStore } from "src/stores/ledger";
+import { getPathParams, redirectTo } from "src/utils/navigate";
+import { hideLoading, loading, toast } from "src/utils/toast";
+import { proxy, useSnapshot } from "valtio";
 import RemarkInput from "./components/remark-input";
-import {calculateAllAmount, mathCalculate} from "src/utils/calculate";
+import { mathCalculate } from "src/utils/calculate";
 
 type IStateUser = IUser & {
     isPay: boolean;
@@ -27,6 +27,22 @@ type IStateUser = IUser & {
     isTakePart: boolean;
     copiesNumber: number;
 };
+function calculateAllAmount(sumPrice: number, average: number, users: IStateUser[], lastTakePartUser: IStateUser | undefined) {
+    const amountArr: number[] = [];
+    let isPushSum = 0;
+    users.forEach(it => {
+        if (it.userId === lastTakePartUser?.userId) {
+            amountArr.push(mathCalculate(sumPrice, isPushSum, '-'));
+        } else if (it.isTakePart) {
+            let _price = mathCalculate(it.copiesNumber, average, '*');
+            isPushSum = mathCalculate(isPushSum, _price, '+');
+            amountArr.push(_price)
+        } else {
+            amountArr.push(0)
+        }
+    })
+    return amountArr;
+}
 
 export default function AddBill() {
     const state = useRef(
@@ -82,29 +98,28 @@ export default function AddBill() {
         state.users = initUser;
     }, []);
 
-    const {sumPrice, averagePrice, copiesNumberArr} = useMemo(() => {
+    const { sumPrice, takePartAmounts } = useMemo(() => {
         let sumPrice = 0;
         let takePartLength = 0;
-        const copiesNumberArr: number[] = [];
-        snap.users.forEach((user) => {
+        let lastUser: IStateUser | undefined;
+        state.users.forEach((user) => {
             if (user.isPay) {
                 sumPrice += Number(user.payPrice);
             }
             if (user.isTakePart) {
                 takePartLength += user.copiesNumber;
-                copiesNumberArr.push(user.copiesNumber)
+                lastUser = user;
             }
         });
+        const _sumPrice = String(sumPrice);
+        const _averagePrice = mathCalculate(sumPrice, takePartLength, '/');
+        const _takePartAmounts = calculateAllAmount(Number(_sumPrice), _averagePrice, state.users, lastUser);
         return {
-            sumPrice: String(sumPrice),
-            averagePrice: mathCalculate(sumPrice, takePartLength, '/'),
-            copiesNumberArr
+            sumPrice: _sumPrice,
+            averagePrice: _averagePrice,
+            takePartAmounts: _takePartAmounts
         };
     }, [snap.users]);
-
-    const takePartAmounts = useMemo(() => {
-        return calculateAllAmount(Number(sumPrice), averagePrice, copiesNumberArr)
-    }, [sumPrice, averagePrice, copiesNumberArr]);
 
     // todo 时间
 
@@ -115,18 +130,18 @@ export default function AddBill() {
 
         state.users.forEach((user, idx) => {
             user.isPay &&
-            payers.push({
-                userId: user.userId,
-                userName: user.userName,
-                amount: Number(user.payPrice),
-            });
+                payers.push({
+                    userId: user.userId,
+                    userName: user.userName,
+                    amount: Number(user.payPrice),
+                });
             user.isTakePart &&
-            participants.push({
-                userId: user.userId,
-                userName: user.userName,
-                amount: takePartAmounts[idx],
-                copiesNumber: user.copiesNumber,
-            });
+                participants.push({
+                    userId: user.userId,
+                    userName: user.userName,
+                    amount: takePartAmounts[idx],
+                    copiesNumber: user.copiesNumber,
+                });
         });
         const param = {
             ledgerId: ledgerStore.currentLedger?.ledgerId || 0,
@@ -204,7 +219,7 @@ export default function AddBill() {
         <View className="popup-add-bill">
             <View className="top_wrap">
                 <CellGroup title="消费" inset>
-                    <Cell title="日常" border={false} value={sumPrice}/>
+                    <Cell title="日常" border={false} value={sumPrice} />
                 </CellGroup>
                 <View
                     className="van-cell-group__title van-cell-group__title--inset"
@@ -305,8 +320,8 @@ export default function AddBill() {
                 onDelete={onDelete}
                 onSubmit={onSubmit}
             />
-            <Toast/>
-            <Notify/>
+            <Toast />
+            <Notify />
         </View>
     );
 }

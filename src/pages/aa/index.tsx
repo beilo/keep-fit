@@ -18,7 +18,10 @@ import { ledgerStore } from "src/stores/ledger";
 import { addRouterParams, navigateTo, redirectTo } from "src/utils/navigate";
 import { hideLoading, loading, toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
-import "./index.less";
+import styles from './index.module.less';
+import classNames from 'classnames/bind';
+const cx = classNames.bind(styles);
+
 
 function AA() {
   const state = useRef(
@@ -106,10 +109,11 @@ function AA() {
     basicsDoRefresh();
   });
 
+
   return (
     <>
-      <View className="aa">
-        <CellGroup className="header-wrap">
+      <View className={cx('aa')}>
+        <CellGroup className={cx('header-wrap')}>
           <Cell
             title={snap.ledgerProfile?.name || "未获取到账单名称"}
             isLink
@@ -136,7 +140,7 @@ function AA() {
           />
         </CellGroup>
         <PowerScrollView
-          className="scorll-wrap"
+          className={cx("scorll-wrap")}
           finishedText="没有更多了"
           successText="刷新成功"
           onScrollToUpper={basicsDoRefresh}
@@ -157,9 +161,9 @@ function AA() {
                 key={item.billId}
                 rightWidth={120}
                 renderRight={
-                  <View className="btn-wrap">
+                  <View className={cx("btn-wrap")}>
                     <View
-                      className="edit-btn"
+                      className={cx("edit-btn")}
                       onClick={() => {
                         navigateTo({
                           url: addRouterParams(ROUTE_PATHS["add-bill"], {
@@ -171,7 +175,7 @@ function AA() {
                       编辑
                     </View>
                     <View
-                      className="del-btn"
+                      className={cx("del-btn")}
                       onClick={() => {
                         del(item.billId);
                       }}
@@ -183,12 +187,12 @@ function AA() {
               >
                 <Cell
                   title={item.remarks || item.categoryName}
-                  label={dayjs(item.billTime).format("HH:mm")}
+                  label={dayjs(item.billTime).format("YYYY-MM-DD HH:mm")}
                   border={true}
                   renderExtra={
                     <View>
-                      <View className="price">{item.billAmount}</View>
-                      <View className="number-people">
+                      <View className={cx("price")}>{item.billAmount}</View>
+                      <View className={cx("number-people")}>
                         {item.participants?.length || 0}人消费，{payerText}
                       </View>
                     </View>
@@ -201,7 +205,7 @@ function AA() {
       </View>
 
       <View
-        className="btn-add"
+        className={cx("btn-add")}
         onClick={() => {
           navigateTo({
             url: ROUTE_PATHS["add-bill"],
