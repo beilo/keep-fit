@@ -180,28 +180,24 @@ function AA() {
             }
             payerText && (payerText += "付款");
             return (
-              <SwipeCell
+              <Cell
                 key={item.billId}
-                rightWidth={120}
+                title={item.remarks || item.categoryName}
+                label={dayjs(item.billTime).format("YYYY-MM-DD HH:mm")}
+                border={true}
+                renderExtra={
+                  <View>
+                    <View className={cx("price")}>{item.billAmount}</View>
+                    <View className={cx("number-people")}>
+                      {item.participants?.length || 0}人消费，{payerText}
+                    </View>
+                  </View>
+                }
                 onClick={() => {
                   state.popDetail.vis = true;
                   state.popDetail.bill = item;
                 }}
-              >
-                <Cell
-                  title={item.remarks || item.categoryName}
-                  label={dayjs(item.billTime).format("YYYY-MM-DD HH:mm")}
-                  border={true}
-                  renderExtra={
-                    <View>
-                      <View className={cx("price")}>{item.billAmount}</View>
-                      <View className={cx("number-people")}>
-                        {item.participants?.length || 0}人消费，{payerText}
-                      </View>
-                    </View>
-                  }
-                />
-              </SwipeCell>
+              />
             );
           })}
         </PowerScrollView>

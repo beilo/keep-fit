@@ -20,6 +20,7 @@ export function PopDetail({
             title: '标题',
             message: "是否删除该账单",
             selector: 'popDetailDialog',
+            zIndex: 2
         }).then((it) => {
             if (it === 'confirm') {
                 onDel()
@@ -27,7 +28,7 @@ export function PopDetail({
         })
     }, [])
     return <>
-        <Popup show={vis} position='bottom' round safeAreaInsetBottom onClose={onClose}>
+        <Popup show={vis} position='bottom' round safeAreaInsetBottom onClose={onClose} zIndex={1}>
             <View className={cx('wrap')}>
                 <CellGroup title="消费" inset>
                     <Cell title="日常" border={false} value={bill?.billAmount || 0} />
