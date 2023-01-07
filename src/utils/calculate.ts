@@ -1,4 +1,3 @@
-// import { chain, evaluate } from 'mathjs'
 import Big from 'big.js';
 
 function toNumber(num: any): number {
@@ -12,12 +11,6 @@ function toNumber(num: any): number {
         return 0;
     }
 }
-
-// export function mathCalculate(num1: any, num2: any, unit: '+' | "-" | "*" | "/") {
-//     let _num1 = toNumber(num1);
-//     let _num2 = toNumber(num2);
-//     return toNumber(chain(evaluate(`${_num1} ${unit} ${_num2}`)).format({ notation: 'fixed', precision: 2 }).done());
-// }
 
 export function mathCalculate(num1: any, num2: any, unit: '+' | "-" | "*" | "/") {
     let _num1 = Big(toNumber(num1));
@@ -44,5 +37,5 @@ export function mathCalculate(num1: any, num2: any, unit: '+' | "-" | "*" | "/")
             res = Big(0);
             break;
     }
-    return res.toFixed(2);
+    return Big(res.toFixed(2)).toNumber();
 }
