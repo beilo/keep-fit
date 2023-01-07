@@ -23,6 +23,7 @@ const Bill = ({ data, onItemClick }: { data: IBill, onItemClick: TOnItemClick })
     if (payerText && payers.length > 1) {
         payerText = payers.length + "人";
     }
+    payerText && (payerText += "付款");
     return <Cell
         key={data.billId}
         title={data.remarks || data.categoryName}
