@@ -102,9 +102,8 @@ function AA() {
         }
         if (data.length >= 10 || pageIndex === 0) {
           pageIndexRef.current = pageIndex
-        } else {
-          state.basicsFinished = true
         }
+        state.basicsFinished = data.length < 10;
       } else {
         throw new Error(res.data.message);
       }
@@ -124,13 +123,16 @@ function AA() {
   const loadMoreRef = useRef();
   useEffect(() => {
     if (!loadMoreRef.current) return;
-    // @ts-ignore
-    const io = Taro.createIntersectionObserver(Taro.getCurrentInstance().page);
-    io.relativeToViewport().observe('#load-more', res => {
-      if (isCallApiRefreshRef.current === false && res.intersectionRatio > 0) {
-        onLoadMore();
-      }
-    });
+    let io;
+    Taro.nextTick(() => {
+      // @ts-ignore
+      io = Taro.createIntersectionObserver(Taro.getCurrentInstance().page);
+      io.relativeToViewport().observe('#load-more', res => {
+        if (isCallApiRefreshRef.current === false && res.intersectionRatio > 0) {
+          onLoadMore();
+        }
+      });
+    })
     if (state.basicsFinished === true) {
       unIntersectionObserver(io);
     }
