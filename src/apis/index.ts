@@ -2,11 +2,19 @@ import { userStore } from "src/stores";
 import axios from "axios";
 import { TaroAdapter } from "axios-taro-adapter";
 import { getToken } from "src/utils/wx";
+import Taro from "@tarojs/taro";
 
 console.log("CONFIG", CONFIG);
-const API_URL = CONFIG.api.aaLedger;
+let API_URL = CONFIG.api.aaLedger;
+const accountInfo = Taro.getAccountInfoSync();
+const baseURL = {
+  'develop': 'https://aa-ledger.sit.wskfz.com/api',
+  'trial': 'https://aa-ledger.sit.wskfz.com/api',
+  'release': 'https://aa-ledger.wskfz.com/api',
+}[accountInfo.miniProgram.envVersion] || API_URL;
+
 export const Http = axios.create({
-  baseURL: API_URL,
+  baseURL: baseURL,
   timeout: 10000,
   adapter: TaroAdapter, // add this line，添加这一行使用taroAdapter
   headers: {

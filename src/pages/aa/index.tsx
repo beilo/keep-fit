@@ -2,14 +2,12 @@ import {
   Cell,
   CellGroup,
   Notify,
-  PowerScrollView,
-  SwipeCell,
   Toast,
 } from "@antmjs/vantui";
 import { View } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
-import dayjs from "dayjs";
-import { useRef } from "react";
+
+import { useRef, useEffect } from "react";
 import { delBill, getBillList } from "src/apis/bill";
 import { getLedgerProfile } from "src/apis/ledger";
 import Sidebar from "src/components/sidebar";
@@ -21,6 +19,7 @@ import { proxy, useSnapshot } from "valtio";
 import styles from './index.module.less';
 import classNames from 'classnames/bind';
 import { PopDetail } from "./components/pop-detail";
+import BillList from "./components/bill-list";
 const cx = classNames.bind(styles);
 
 class IPopDetail {
@@ -60,7 +59,7 @@ function AA() {
     }
   };
   useDidShow(() => {
-    basicsDoRefresh();
+    onRefresh();
     apiGetLedgerProfile();
   });
 
@@ -68,7 +67,7 @@ function AA() {
     try {
       const res = await delBill(billId);
       if (res.data.code === 0) {
-        basicsDoRefresh();
+        onRefresh();
         return;
       }
       throw new Error(res.data.message);
@@ -80,9 +79,13 @@ function AA() {
     apiDelLedger(billId);
   };
 
-  let pageIndex = useRef(0).current;
+  const pageIndexRef = useRef(0);
+  const isCallApiRefreshRef = useRef(false);
   const apiRefresh = async (isRefresh = false) => {
-    pageIndex = isRefresh ? 0 : ++pageIndex;
+    isCallApiRefreshRef.current = true;
+
+    let pageIndex = pageIndexRef.current;
+    if (isRefresh) { pageIndex = 0 } else { pageIndex += 1 }
     try {
       const res = await getBillList({
         ledgerId: ledgerStore.currentLedger?.ledgerId ?? 0,
@@ -97,22 +100,49 @@ function AA() {
         } else {
           state.billList.push(...data);
         }
-        state.basicsFinished = data.length < 10;
-        return;
+        if (data.length >= 10 || pageIndex === 0) {
+          pageIndexRef.current = pageIndex
+        } else {
+          state.basicsFinished = true
+        }
+      } else {
+        throw new Error(res.data.message);
       }
-      throw new Error(res.data.message);
     } catch (error) {
-      !isRefresh && --pageIndex;
       toast.error(error.message);
+    } finally {
+      isCallApiRefreshRef.current = false;
     }
   };
-  const basicsDoRefresh = async () => {
+  const onRefresh = async () => {
     await apiRefresh(true);
   };
-  const basicsLoadMore = async () => {
+  const onLoadMore = async () => {
     await apiRefresh();
   };
 
+  const loadMoreRef = useRef();
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+    // @ts-ignore
+    const io = Taro.createIntersectionObserver(Taro.getCurrentInstance().page);
+    io.relativeToViewport().observe('#load-more', res => {
+      if (isCallApiRefreshRef.current === false && res.intersectionRatio > 0) {
+        onLoadMore();
+      }
+    });
+    if (state.basicsFinished === true) {
+      unIntersectionObserver(io);
+    }
+    return () => {
+      unIntersectionObserver(io);
+    }
+  }, [loadMoreRef.current, state.basicsFinished])
+  const unIntersectionObserver = (intersectionObserver: Taro.IntersectionObserver | null) => {
+    if (intersectionObserver) {
+      intersectionObserver.disconnect();
+    }
+  }
 
   return (
     <>
@@ -162,45 +192,18 @@ function AA() {
             onClick={() => (state.visSidebar = true)}
           />
         </CellGroup>
-        <PowerScrollView
-          className={cx("scorll-wrap")}
-          finishedText="没有更多了"
-          successText="刷新成功"
-          onScrollToUpper={basicsDoRefresh}
-          onScrollToLower={basicsLoadMore}
-          current={snap.billList.length || 0}
-          pageSize={10}
-          finished={snap.basicsFinished}
-        >
-          {snap.billList.map((item) => {
-            const payers = item.payers;
-            let payerText = payers?.[0]?.userName || "";
-            if (payerText && payers.length > 1) {
-              payerText = payers.length + "人";
-            }
-            payerText && (payerText += "付款");
-            return (
-              <Cell
-                key={item.billId}
-                title={item.remarks || item.categoryName}
-                label={dayjs(item.billTime).format("YYYY-MM-DD HH:mm")}
-                border={true}
-                renderExtra={
-                  <View>
-                    <View className={cx("price")}>{item.billAmount}</View>
-                    <View className={cx("number-people")}>
-                      {item.participants?.length || 0}人消费，{payerText}
-                    </View>
-                  </View>
-                }
-                onClick={() => {
-                  state.popDetail.vis = true;
-                  state.popDetail.bill = item;
-                }}
-              />
-            );
-          })}
-        </PowerScrollView>
+        <BillList
+          data={snap.billList}
+          onItemClick={(data) => {
+            state.popDetail.vis = true;
+            state.popDetail.bill = data;
+          }} />
+
+        {(snap.billList && snap.billList.length > 0 && state.basicsFinished === false) &&
+          <View ref={loadMoreRef}
+            id="load-more"
+            className={cx('load-more')}
+            onClick={onLoadMore}>点击加载下一页</View>}
       </View>
 
       <View
