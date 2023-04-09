@@ -1,13 +1,9 @@
-import {
-  Cell,
-  CellGroup,
-  Notify,
-  Toast,
-} from "@antmjs/vantui";
-import { View } from "@tarojs/components";
+import { Cell, CellGroup, Notify, Toast } from "@antmjs/vantui";
+import { ScrollView, View } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
 
-import { useRef, useEffect } from "react";
+import classNames from "classnames/bind";
+import { useRef } from "react";
 import { delBill, getBillList } from "src/apis/bill";
 import { getLedgerProfile } from "src/apis/ledger";
 import Sidebar from "src/components/sidebar";
@@ -16,15 +12,14 @@ import { ledgerStore } from "src/stores/ledger";
 import { addRouterParams, navigateTo, redirectTo } from "src/utils/navigate";
 import { toast } from "src/utils/toast";
 import { proxy, useSnapshot } from "valtio";
-import styles from './index.module.less';
-import classNames from 'classnames/bind';
-import { PopDetail } from "./components/pop-detail";
 import BillList from "./components/bill-list";
+import { PopDetail } from "./components/pop-detail";
+import styles from "./index.module.less";
 const cx = classNames.bind(styles);
 
 class IPopDetail {
   vis: boolean;
-  bill: IBill | undefined
+  bill: IBill | undefined;
 }
 class State {
   billList: IBill[] = [];
@@ -33,15 +28,11 @@ class State {
   ledgerProfile: ILedgerProfile | null;
   popDetail: IPopDetail = {
     vis: false,
-    bill: undefined
-  }
+    bill: undefined,
+  };
 }
 function AA() {
-  const state = useRef(
-    proxy(
-      new State()
-    )
-  ).current;
+  const state = useRef(proxy(new State())).current;
   const snap = useSnapshot(state) as typeof state;
 
   const apiGetLedgerProfile = async () => {
@@ -85,7 +76,11 @@ function AA() {
     isCallApiRefreshRef.current = true;
 
     let pageIndex = pageIndexRef.current;
-    if (isRefresh) { pageIndex = 0 } else { pageIndex += 1 }
+    if (isRefresh) {
+      pageIndex = 0;
+    } else {
+      pageIndex += 1;
+    }
     try {
       const res = await getBillList({
         ledgerId: ledgerStore.currentLedger?.ledgerId ?? 0,
@@ -101,7 +96,7 @@ function AA() {
           state.billList.push(...data);
         }
         if (data.length >= 10 || pageIndex === 0) {
-          pageIndexRef.current = pageIndex
+          pageIndexRef.current = pageIndex;
         }
         state.basicsFinished = data.length < 10;
       } else {
@@ -117,38 +112,68 @@ function AA() {
     await apiRefresh(true);
   };
   const onLoadMore = async () => {
+    if (state.basicsFinished) return;
     await apiRefresh();
   };
-
-  const loadMoreRef = useRef();
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
-    let io;
-    Taro.nextTick(() => {
-      // @ts-ignore
-      io = Taro.createIntersectionObserver(Taro.getCurrentInstance().page);
-      io.relativeToViewport().observe('#load-more', res => {
-        if (isCallApiRefreshRef.current === false && res.intersectionRatio > 0) {
-          onLoadMore();
-        }
-      });
-    })
-    if (state.basicsFinished === true) {
-      unIntersectionObserver(io);
-    }
-    return () => {
-      unIntersectionObserver(io);
-    }
-  }, [loadMoreRef.current, state.basicsFinished])
-  const unIntersectionObserver = (intersectionObserver: Taro.IntersectionObserver | null) => {
-    if (intersectionObserver) {
-      intersectionObserver.disconnect();
-    }
-  }
+  const isLoadingMore = useRef(false);
 
   return (
     <>
-      <PopDetail vis={snap.popDetail.vis} bill={snap.popDetail.bill}
+      <View className={cx("aa")}>
+        <ScrollView
+          scrollY={true}
+          style={{ height: "100vh" }}
+          lowerThreshold={150}
+          onScrollToLower={async () => {
+            if (isLoadingMore.current) return;
+            try {
+              await onLoadMore();
+              isLoadingMore.current = false;
+            } catch (error) {
+              isLoadingMore.current = false;
+            }
+          }}
+        >
+          <CellGroup className={cx("header-wrap")}>
+            <Cell
+              title={snap.ledgerProfile?.name || "未获取到账单名称"}
+              isLink
+              onClick={() => {
+                redirectTo({ url: ROUTE_PATHS["ledger-list"] });
+              }}
+            />
+            <Cell
+              title={"账本成员"}
+              label={`共${
+                snap.ledgerProfile?.members?.length || 0
+              }人, 全员消费${snap.ledgerProfile?.totalConsume || 0}元`}
+              isLink
+              onClick={() => {
+                Taro.setClipboardData({
+                  data: String(snap.ledgerProfile?.ledgerCode),
+                });
+              }}
+            />
+            <Cell
+              title={"其他操作"}
+              isLink
+              onClick={() => (state.visSidebar = true)}
+            />
+          </CellGroup>
+          <BillList
+            data={snap.billList}
+            onItemClick={(data) => {
+              state.popDetail.vis = true;
+              state.popDetail.bill = data;
+            }}
+          />
+        </ScrollView>
+      </View>
+
+
+      <PopDetail
+        vis={snap.popDetail.vis}
+        bill={snap.popDetail.bill}
         onClose={() => {
           state.popDetail.vis = false;
         }}
@@ -168,46 +193,6 @@ function AA() {
           }
         }}
       />
-      <View className={cx('aa')}>
-        <CellGroup className={cx('header-wrap')}>
-          <Cell
-            title={snap.ledgerProfile?.name || "未获取到账单名称"}
-            isLink
-            onClick={() => {
-              redirectTo({ url: ROUTE_PATHS["ledger-list"] });
-            }}
-          />
-          <Cell
-            title={"账本成员"}
-            label={`共${snap.ledgerProfile?.members?.length || 0}人, 全员消费${snap.ledgerProfile?.totalConsume || 0
-              }元`}
-            isLink
-            onClick={() => {
-              Taro.setClipboardData({
-                data: String(snap.ledgerProfile?.ledgerCode),
-              });
-            }}
-          />
-          <Cell
-            title={"其他操作"}
-            isLink
-            onClick={() => (state.visSidebar = true)}
-          />
-        </CellGroup>
-        <BillList
-          data={snap.billList}
-          onItemClick={(data) => {
-            state.popDetail.vis = true;
-            state.popDetail.bill = data;
-          }} />
-
-        {(snap.billList && snap.billList.length > 0 && state.basicsFinished === false) &&
-          <View ref={loadMoreRef}
-            id="load-more"
-            className={cx('load-more')}
-            onClick={onLoadMore}>点击加载下一页</View>}
-      </View>
-
       <View
         className={cx("btn-add")}
         onClick={() => {
